@@ -54,14 +54,17 @@ public class Main {
 		//loading image coefs
 		Wavelet2DTransformation tranformation = new HaarClassic();
 		coefs2Image(tranformation.getCaption());
+		
+		tranformation = new HaarAdaptive();
+		coefs2Image(tranformation.getCaption());
 	}
 	
 	private void coefs2Image(String transfName){
 		ImageObject[] _4CoefMatrix = new ImageObject[] {
-			coefs2Image(transfName, FileNaming.mAverageCoef, true),
-			coefs2Image(transfName, FileNaming.mHorizCoef, true),
-			coefs2Image(transfName, FileNaming.mVerticalCoef, true),
-			coefs2Image(transfName, FileNaming.mDialonalCoef, true),
+			coefs2Image(transfName, FileNaming.mAverageCoef, false),
+			coefs2Image(transfName, FileNaming.mHorizCoef, false),
+			coefs2Image(transfName, FileNaming.mVerticalCoef, false),
+			coefs2Image(transfName, FileNaming.mDialonalCoef, false),
 		};
 		
 		//gather 4 pictures pretty

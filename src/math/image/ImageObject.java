@@ -7,6 +7,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import math.constants.FileNaming;
+
 public class ImageObject {
 	private int [] rgbs;
 	public int width;
@@ -102,7 +104,7 @@ public class ImageObject {
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		image.setRGB(0, 0, width, height, rgbs, 0, width);
 
-        File imageFile = new File(filename+"."+ext);
+        File imageFile = new File(FileNaming.resultsFolder+filename+"."+ext);
         try {
 			ImageIO.write(image, ext, imageFile);
 			System.out.println("Image saved to file " + filename+"."+ext);
@@ -122,7 +124,7 @@ public class ImageObject {
 		image.setRGB(0, 	height, width, height, images[2].rgbs, 0, width);
 		image.setRGB(width, height, width, height, images[3].rgbs, 0, width);
 		
-		File imageFile = new File(filename+"."+ext);
+		File imageFile = new File(FileNaming.resultsFolder+filename+"."+ext);
         try {
 			ImageIO.write(image, ext, imageFile);
 			System.out.println("4 Images saved to file " + filename+"."+ext);

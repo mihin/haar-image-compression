@@ -87,7 +87,10 @@ public class Matrix {
 //		BufferedOutputStream os = null;
 		BufferedWriter bw = null;
 		try {
-			File f = new File(path);
+//			File f = new File(FileNaming.resultsFolder);
+//			f.mkdirs();
+			File f = new File(FileNaming.resultsFolder+path);
+			
 			bw = new BufferedWriter(new FileWriter(f));
 //			os = new BufferedOutputStream(new FileOutputStream(f));
 			if (comments!=null && !comments.equals("")){

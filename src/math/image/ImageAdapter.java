@@ -44,7 +44,7 @@ public class ImageAdapter {
 		int width=0, height=0;
 		try {
 			for (String file:files){
-				br = new BufferedReader(new FileReader(file));
+				br = new BufferedReader(new FileReader(FileNaming.resultsFolder+file));
 				line = br.readLine();
 				System.out.println("Reading file.. "+line);
 				color = line.split(" ")[2];

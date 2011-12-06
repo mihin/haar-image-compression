@@ -2,11 +2,12 @@ package math.constants;
 
 public interface FileNaming {
 	public final String ext = ".txt";
+	public final String resultsFolder = "results/";
 	
-	public final String mAverageCoef = "ma";
-	public final String mHorizCoef = "mh";
-	public final String mVerticalCoef = "mv";
-	public final String mDialonalCoef = "md";
+	public final String mAverageCoef = "MA";
+	public final String mHorizCoef = "MH";
+	public final String mVerticalCoef = "MV";
+	public final String mDialonalCoef = "MD";
 	
 	public final String cRed = "red";
 	public final String cGreen = "green";

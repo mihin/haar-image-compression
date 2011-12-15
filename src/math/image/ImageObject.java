@@ -115,7 +115,7 @@ public class ImageObject {
 		}
 	}
 	
-	public static boolean save4ImagesToFile(ImageObject[] images, String filename, String ext){
+	public static boolean saveDecompImagesToFile(ImageObject[] images, String filename, String ext){
 		final int width = images[0].width;
 		final int height = images[0].height;
 		BufferedImage image = new BufferedImage(width*2, height*2, BufferedImage.TYPE_INT_RGB);

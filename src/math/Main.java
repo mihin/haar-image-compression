@@ -17,12 +17,14 @@ public class Main {
 	public static void main(String [] in){
 		Main m = new Main();
 		
-		m.image2Coefs();
+		m.decomposeImage();
 	
-		m.coefs2Image();
+		m.loadDecompCoefs();
+		
+		m.reconstructImage();
 	}
 	
-	private void image2Coefs(){
+	private void decomposeImage(){
 		final String PATH = "image.jpg";
 		
 		ImageAdapter ia = new ImageAdapter();
@@ -40,37 +42,37 @@ public class Main {
 		}
 		DWT dwt =  new DWT(new HaarClassic());
 		DWTCoefficients coefR, coefG, coefB; 
-		coefR = dwt.calculate(new Matrix(imageData.pixelsR), true, "red");
-		coefG = dwt.calculate(new Matrix(imageData.pixelsG), true, "green");
-		coefB = dwt.calculate(new Matrix(imageData.pixelsB), true, "blue");
+		coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red");
+		coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green");
+		coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue");
 		
 		dwt =  new DWT(new HaarAdaptive());
-		coefR = dwt.calculate(new Matrix(imageData.pixelsR), true, "red");
-		coefG = dwt.calculate(new Matrix(imageData.pixelsG), true, "green");
-		coefB = dwt.calculate(new Matrix(imageData.pixelsB), true, "blue");
+		coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red");
+		coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green");
+		coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue");
 	}
 	
-	private void coefs2Image(){
+	private void loadDecompCoefs(){
 		//loading image coefs
 		Wavelet2DTransformation tranformation = new HaarClassic();
-		coefs2Image(tranformation.getCaption());
+		loadDecompCoefs(tranformation.getCaption());
 		
 		tranformation = new HaarAdaptive();
-		coefs2Image(tranformation.getCaption());
+		loadDecompCoefs(tranformation.getCaption());
 	}
 	
-	private void coefs2Image(String transfName){
+	private void loadDecompCoefs(String transfName){
 		ImageObject[] _4CoefMatrix = new ImageObject[] {
-			coefs2Image(transfName, FileNaming.mAverageCoef, false),
-			coefs2Image(transfName, FileNaming.mHorizCoef, false),
-			coefs2Image(transfName, FileNaming.mVerticalCoef, false),
-			coefs2Image(transfName, FileNaming.mDialonalCoef, false),
+			loadDecompCoefs(transfName, FileNaming.mAverageCoef, false),
+			loadDecompCoefs(transfName, FileNaming.mHorizCoef, false),
+			loadDecompCoefs(transfName, FileNaming.mVerticalCoef, false),
+			loadDecompCoefs(transfName, FileNaming.mDialonalCoef, false),
 		};
 		
 		//gather 4 pictures pretty
-		ImageObject.save4ImagesToFile(_4CoefMatrix, "converted"+"_"+transfName+"_Combined", "jpg");	
+		ImageObject.saveDecompImagesToFile(_4CoefMatrix, "converted"+"_"+transfName+"_Combined", "jpg");	
 	}
-	private ImageObject coefs2Image(String transfName, String matrixName, boolean saveToSeparateFile){
+	private ImageObject loadDecompCoefs(String transfName, String matrixName, boolean saveToSeparateFile){
 		ImageAdapter ia = new ImageAdapter();
 		ImageObject imageData = ia.readImageCoefficients(new String[]{
 				FileNaming.cRed  +transfName+matrixName+FileNaming.ext,
@@ -93,6 +95,11 @@ public class Main {
 		}
 		return imageData;
 	}
-	
+
+	private void reconstructImage() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	
 }

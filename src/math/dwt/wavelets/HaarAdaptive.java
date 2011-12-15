@@ -66,6 +66,26 @@ public class HaarAdaptive implements Wavelet2DTransformation {
 	}
 	
 	/**
+	 * coefs [a,v,h,d,t]
+	 * t - transformation id
+	 */
+	public float [] inverse(float [] coef){
+		return inverse(coef, (byte)Math.round(coef[4]));
+	}
+	/**
+	 * 
+	 * @param tranform
+	 * 	0 - HaarClassic(),
+	 *	1 - HaarVertical(),
+	 *	2 - HaarHorizotal(),
+	 *	3 - HaarDiagonal() 
+	 * @return
+	 */
+	public float [] inverse(float [] coef, byte tranform){
+		return transformations[tranform].inverse(coef);
+	}
+	
+	/**
 	 * @param q coefs array
 	 * @return sum of squares of 2nd, 3rd, 4th term 
 	 */

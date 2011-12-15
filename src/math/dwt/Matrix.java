@@ -4,10 +4,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 
 import math.constants.FileNaming;
 
-public class Matrix {
+public class Matrix implements Serializable{
+	private static final long serialVersionUID = -6115000503774456837L;
+	
+	
 	private float [][] values;
 	private long norm = 0;
 	public Matrix(int rows, int columns){

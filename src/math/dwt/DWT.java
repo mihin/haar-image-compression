@@ -1,7 +1,6 @@
 package math.dwt;
 
 import math.constants.FileNaming;
-import math.dwt.wavelets.HaarClassic;
 
 public class DWT {
 	private Wavelet2DTransformation tranformation;
@@ -9,8 +8,8 @@ public class DWT {
 		super();
 		this.tranformation = tranformation;
 	}
-
-	public DWTCoefficients calculate(Matrix inputMatrix, boolean calculateMatrixNorms, String fileSaveName){
+	
+	public DWTCoefficients decompose(Matrix inputMatrix, boolean calculateMatrixNorms, String fileSaveName){
 //		 = new Matrix(input);
 //		System.out.println("Input matrix = " + inputMatrix);
 		
@@ -44,15 +43,25 @@ public class DWT {
 		return dwtCoefficients;
 	}
 
+	/**
+	 * ma-md are half a size of inputMatrix
+	 * 
+	 * @param inputMatrix Color matrix 
+	 * @param ma Average Matrix
+	 * @param mv Vertical
+	 * @param mh Horiz
+	 * @param md Diag
+	 */
 	private void processCoeficients(Matrix inputMatrix, Matrix ma, Matrix mv, Matrix mh, Matrix md) {
 		final int rows = inputMatrix.getRowsCount();
 		final int columns = inputMatrix.getColumnsCount();
 		
-		HaarClassic haar = new HaarClassic();
-		float c1,c2,c3,c4;
+//		HaarClassic haar = new HaarClassic();
+//		float c1,c2,c3,c4;
+		float [] dwtCoef = null;
 		for (int i = 0; i < rows; i+=2){
 			for (int j = 0; j < columns; j+=2){
-				float [] dwtCoef = tranformation.perform(
+				dwtCoef = tranformation.perform(
 						new float[]{
 							inputMatrix.get()[i][j], 
 							inputMatrix.get()[i][j+1], 
@@ -66,6 +75,37 @@ public class DWT {
 				md.set(i/2,j/2,dwtCoef[3]);
 			}
 		}
+	}
+	
+	public Matrix reconstruct(DWTCoefficients coefs){
+		float [][] ma, mv, mh, md;
+		ma = coefs.getMa().get();	
+		mv = coefs.getMv().get();	
+		mh = coefs.getMh().get();	
+		md = coefs.getMd().get();
+		final int rows = coefs.getMa().getRowsCount(); 
+		final int columns = coefs.getMa().getColumnsCount();
+		Matrix reconstructedMatrix = new Matrix(rows*2, columns*2); 
+		
+		float [] dwtCoef = null;
+		for (int i = 0; i < rows; i++){
+			for (int j = 0; j < columns; j++){
+				dwtCoef = tranformation.inverse(
+						new float[] {
+							ma[i][j],
+							mv[i][j],
+							mh[i][j],
+							md[i][j],
+						}
+					);
+				reconstructedMatrix.set(i*2, 	j*2, 	dwtCoef[0]);
+				reconstructedMatrix.set(i*2+1, 	j*2,	dwtCoef[1]);
+				reconstructedMatrix.set(i*2,	j*2+1,	dwtCoef[2]);
+				reconstructedMatrix.set(i*2+1, 	j*2+1, 	dwtCoef[3]);
+			}	
+		}
+		
+		return reconstructedMatrix;
 	}
 
 }

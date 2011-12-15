@@ -1,6 +1,10 @@
 package math.dwt;
 
-public class DWTCoefficients {
+import java.io.Serializable;
+
+public class DWTCoefficients implements Serializable{
+	private static final long serialVersionUID = 7791903351562707262L;
+	
 	/**
 	 * Matrixes of coefficients (avarege, vertical, horizontal, diagonal)
 	 */
@@ -10,6 +14,9 @@ public class DWTCoefficients {
 	 */
 	private double nMv = -1, nMh = -1, nMd = -1;
 
+	
+	//TODO make coefs srialisable to save load them
+	
 	public DWTCoefficients(Matrix ma, Matrix mv, Matrix mh, Matrix md, boolean calculateMatrixNorms) {
 		super();
 		this.ma = ma;

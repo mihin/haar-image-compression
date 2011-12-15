@@ -6,6 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 
+import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
+
 import math.constants.FileNaming;
 
 public class Matrix implements Serializable{
@@ -118,5 +120,34 @@ public class Matrix implements Serializable{
 			}
 		}
 	}
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (obj == null || !(obj instanceof Matrix )) {
+			System.out.println("Matrix.equals(). The object is not Matrix");
+			return false;
+		}
+		Matrix second = (Matrix)obj;
+		if (second.getColumnsCount()!=getColumnsCount() || second.getRowsCount()!=getRowsCount()){
+			System.out.println("Matrix.equals(). The Matrixes have dif sizes.");
+			return false;
+		}
+		
+		float a,b;
+		boolean equals = true;
+		for (int i = 0; i < getRowsCount(); i++){
+			for (int j = 0; j < getColumnsCount(); j++){
+				a = this.get()[i][j];
+				b = second.get()[i][j];
+				if (a!=b){
+					System.out.println("Matrix.equals(). Values ("+i+","+j+") differ:\t"+a+"\t"+b);
+					equals = false;
+				}
+			}	
+		}
+		
+		return equals;
+	}
+	
 	
 }

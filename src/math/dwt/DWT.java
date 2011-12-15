@@ -64,8 +64,8 @@ public class DWT {
 				dwtCoef = tranformation.perform(
 						new float[]{
 							inputMatrix.get()[i][j], 
-							inputMatrix.get()[i][j+1], 
 							inputMatrix.get()[i+1][j], 
+							inputMatrix.get()[i][j+1], 
 							inputMatrix.get()[i+1][j+1]
 							}
 						);

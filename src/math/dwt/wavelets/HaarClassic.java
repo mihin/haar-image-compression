@@ -31,7 +31,7 @@ public class HaarClassic implements Wavelet2DTransformation {
 		v = coef[1];
 		h = coef[2];
 		d = coef[3];
-		c1=(v+h+d)/4-a;
+		c1=(v+h+d)/4+a;
 		c2=a+(h-v-d)/4;
 		c3=a+(v-h-d)/4;
 		c4=a+(d-v-h)/4;

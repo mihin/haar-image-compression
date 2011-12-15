@@ -19,9 +19,9 @@ public class Main {
 		
 		m.decomposeImage();
 	
-		m.loadDecompCoefs();
+//		m.loadDecompCoefs();
 		
-		m.reconstructImage();
+//		m.reconstructImage();
 	}
 	
 	private void decomposeImage(){
@@ -36,20 +36,54 @@ public class Main {
 			e.printStackTrace();
 		}
 		
-//		= {{1,2,3,4}, {4,6,1,2}, {1,2,3,4}, {4,6,1,2}};
 		if (imageData == null){
 			System.err.println("ImageData wasn't loaded, file = "+PATH);
+			return;
 		}
+		
+
 		DWT dwt =  new DWT(new HaarClassic());
 		DWTCoefficients coefR, coefG, coefB; 
 		coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red");
 		coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green");
 		coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue");
+
+//		Matrix m = new Matrix(new float [][]{{1,2,3,4}, {4,6,1,2}, {1,2,3,4}, {5,6,7,2}}); 
+//		Matrix m = new Matrix(new float [][]{{1,2}, {3, 4}});
+//		DWTCoefficients coef = dwt.decompose( m , true, "testMatr");
 		
-		dwt =  new DWT(new HaarAdaptive());
-		coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red");
-		coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green");
-		coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue");
+//		{ //dummy reconstruction
+//			ImageObject reconstImage = new ImageObject(
+//					new Matrix(imageData.pixelsR).get(),
+//					new Matrix(imageData.pixelsG).get(),
+//					new Matrix(imageData.pixelsB).get(),
+//					imageData.width, imageData.height);
+//			reconstImage.saveToImageFile("reconstructedImage22", "jpg");
+//			
+//		}
+		{ //reconstruction
+			System.out.println("Reconstruction attempt..");
+//			Matrix reconst = dwt.reconstruct(coef);
+//			reconst.equals(m);
+			
+			
+			Matrix reconstR = dwt.reconstruct(coefR);
+			Matrix reconstG = dwt.reconstruct(coefG);
+			Matrix reconstB = dwt.reconstruct(coefB);
+			if (reconstR.equals(new Matrix(imageData.pixelsR)) &&
+				reconstG.equals(new Matrix(imageData.pixelsG)) &&
+				reconstB.equals(new Matrix(imageData.pixelsB))) 
+				System.out.println("_Reconstructed Matrixes are equal");
+			ImageObject reconstImage = new ImageObject(
+					reconstR.get(), reconstG.get(), reconstB.get(), reconstR.getColumnsCount(), reconstR.getRowsCount());
+			reconstImage.saveToImageFile("reconstructedImage", "jpg");
+		}
+		
+		
+//		dwt =  new DWT(new HaarAdaptive());
+//		coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red");
+//		coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green");
+//		coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue");
 	}
 	
 	private void loadDecompCoefs(){

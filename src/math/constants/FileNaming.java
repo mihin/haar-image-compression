@@ -9,6 +9,8 @@ public interface FileNaming {
 	public final String mVerticalCoef = "MV";
 	public final String mDialonalCoef = "MD";
 	
+	public final String mTransfMap = "Map";
+	
 	public final String cRed = "red";
 	public final String cGreen = "green";
 	public final String cBlue = "blue";

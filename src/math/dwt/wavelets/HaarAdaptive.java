@@ -15,61 +15,29 @@ public class HaarAdaptive implements Wavelet2DTransformation {
 	}
 	public String getCaption(){return "HaarAdaptive";}
 	
-	float [] minCoef,coef;
+	float [] minCoef,coefBuf;
 	double minNorm, norm;
-//	Wavelet2DTransformation minTrans, tr;
+	int minTranID;
 	@Override
-	public float[] perform(float[] coef) {
-		minNorm = getSquareSum((minCoef = transformations[0].perform(coef)));
+	public float[] perform(float[] inCoef) {
+		minTranID = 0;
+		minNorm = getSquareSum((minCoef = transformations[0].perform(inCoef)));
 		for (int i=1;i<transformations.length;i++){
-			norm = getSquareSum((coef = transformations[i].perform(coef)));
+			norm = getSquareSum((coefBuf = transformations[i].perform(inCoef)));
 			if (norm < minNorm){
 				minNorm = norm;
-				minCoef = coef;
+				minCoef = coefBuf;
+				minTranID = i;
 			}
 		}
-		
-		return minCoef;
-		//1
-//		minTrans = transformations[0];
-//		minCoef=minTrans.perform(coef);
-//		minNorm = getSquareSum(minCoef);
-//		
-//		for (int i=1;i<transformations.length;i++){
-//			if ( minNorm >  (norm = getSquareSum((coef=transformations[i].perform(coef))))){
-//				minTrans = transformations[i];
-//				minCoef=coef;
-//				minNorm = norm;
-//			}
-//		}
-//		return minCoef;
-		
-		//2
-//		w1coef = hc.perform(coef);
-//		w2coef = hv.perform(coef);
-//		if ( (minNorm = getSquareSum(w1coef)) > (norm = getSquareSum(w2coef)) ){
-//			minNorm = norm;
-//			w1coef = w2coef;
-//		}
-//		w2coef = hh.perform(coef);
-//		if ( (minNorm) > (norm = getSquareSum(w2coef)) ){
-//			minNorm = norm;
-//			w1coef = w2coef;
-//		}
-//		w2coef = hd.perform(coef);
-//		if ( (minNorm) > (norm = getSquareSum(w2coef)) ){
-//			minNorm = norm;
-//			w1coef = w2coef;
-//		}
-//			
-//		return w1coef;
+		return new float[] {minCoef[0],minCoef[1],minCoef[2],minCoef[3],minTranID};
 	}
 	
 	/**
 	 * coefs [a,v,h,d,t]
 	 * t - transformation id
 	 */
-	public float [] inverse(float [] coef){
+	public float [] inverse(float [] coef) throws ArrayIndexOutOfBoundsException{
 		return inverse(coef, (byte)Math.round(coef[4]));
 	}
 	/**

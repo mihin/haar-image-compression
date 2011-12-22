@@ -14,10 +14,10 @@ public class HaarHorizotal implements Wavelet2DTransformation {
 		a = (coef[0]+coef[1]+coef[2]+coef[3])/4;
 		//	1	-1
 		//	0	0
-		v = (coef[0]-coef[1]);
+		h = (coef[0]-coef[1]);
 		//	1	1
 		//	-1	-1
-		h = (coef[0]+coef[1]-coef[2]-coef[3]);
+		v = (coef[0]+coef[1]-coef[2]-coef[3]);
 		//	0	0
 		//	1	-1
 		d = (coef[2]-coef[3]);

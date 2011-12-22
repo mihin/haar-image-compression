@@ -8,26 +8,30 @@ public class DWTCoefficients implements Serializable{
 	/**
 	 * Matrixes of coefficients (avarege, vertical, horizontal, diagonal)
 	 */
-	private Matrix ma, mv, mh, md;
+	private Matrix ma, mv, mh, md, transformationsMap;
 	/*
 	 * Norms of matrixes
 	 */
-	private double nMv = -1, nMh = -1, nMd = -1;
+	private long nMv = -1, nMh = -1, nMd = -1, nMa = -1;
 
 	
 	//TODO make coefs srialisable to save load them
 	
-	public DWTCoefficients(Matrix ma, Matrix mv, Matrix mh, Matrix md, boolean calculateMatrixNorms) {
+	public DWTCoefficients(Matrix ma, Matrix mv, Matrix mh, Matrix md, Matrix adoptiveMap, boolean calculateMatrixNorms) {
 		super();
 		this.ma = ma;
 		this.mv = mv;
 		this.mh = mh;
 		this.md = md;
 		
+		this.transformationsMap = adoptiveMap;
+		
 		if (calculateMatrixNorms){
 			nMv = mv.calculateNorm();
 			nMh = mh.calculateNorm();
 			nMd = md.calculateNorm();
+			
+			nMa = ma.calculateNorm();
 		}
 	}
 
@@ -46,19 +50,25 @@ public class DWTCoefficients implements Serializable{
 	public Matrix getMd() {
 		return md;
 	}
+	
+	public Matrix getMap() {
+		return transformationsMap;
+	}
 
-	public double getNormMv() {
+	public long getNormMv() {
 		return nMv;
 	}
 
-	public double getNormMh() {
+	public long getNormMh() {
 		return nMh;
 	}
 
-	public double getNormMd() {
+	public long getNormMd() {
 		return nMd;
 	}
 	
-	
+	public long getNormMa() {
+		return nMa;
+	}
 	
 }

@@ -1,7 +1,6 @@
 package math.image;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,23 +8,20 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
-
 import math.constants.FileNaming;
 
 public class ImageAdapter {
-	public ImageAdapter(){
-		
-	}
+//	public ImageAdapter(){}
 	
-	public ImageObject readImageFile(String path) throws IOException{
-		File file = new File(path);
+	public ImageObject readImageFile(String filename) throws IOException{
+		File file = new File(filename);
 		BufferedImage bufferedImage = ImageIO.read(file);
 //		ImageIO.write(bufferedImage, "jpg", new File("loadedImage.jpg"));
 		// Get all the pixels
 		int w = bufferedImage.getWidth(null);
 		int h = bufferedImage.getHeight(null);
+//		if (w%2==1)w=w+1;
+//		if (h%2==1)h=h+1;
 		int[] rgbs = new int[w*h];
 		bufferedImage.getRGB(0, 0, w, h, rgbs, 0, w);
 		return new ImageObject(rgbs, w, h);

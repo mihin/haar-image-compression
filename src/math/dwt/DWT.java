@@ -33,31 +33,16 @@ public class DWT {
 			adoptiveMap = new Matrix(coefRows,coefColumns);
 		}
 		processCoeficients(inputMatrix,ma,mv,mh,md,adoptiveMap);
-		DWTCoefficients dwtCoefficients = new DWTCoefficients(ma, mv, mh, md, adoptiveMap, calculateMatrixNorms);
-//		System.out.println(tranformation.getCaption()+" "+fileSaveName+" coeficients matrix norms:"+
-//				" horiz="+dwtCoefficients.getNormMh()+
-//				", vertical="+dwtCoefficients.getNormMv()+
-//				", diag="+dwtCoefficients.getNormMd());
+		DWTCoefficients DWTCoefs = new DWTCoefficients(ma, mv, mh, md, adoptiveMap, calculateMatrixNorms);
 
 		DecimalFormat myFormatter = new DecimalFormat("#,000");
-//		System.out.println(" "+fileSaveName+
-//				myFormatter.format(dwtCoefficients.getNormMa())
-//				);
 		
-//		System.out.printf("%10.0f\t%20.0f\n", dwtCoefficients.getNormMh(), dwtCoefficients.getNormMa());
-//		System.out.println(" "+fileSaveName+
-//				"\t\t"+myFormatter.format(dwtCoefficients.getNormMh())+
-//				"\t"+myFormatter.format(dwtCoefficients.getNormMv())+
-//				"\t"+myFormatter.format(dwtCoefficients.getNormMd())+
-//				"\t"+myFormatter.format(dwtCoefficients.getNormMa())+
-//				"\t\tV,H,D Sum: "+myFormatter.format(dwtCoefficients.getNormMh()+dwtCoefficients.getNormMv()+dwtCoefficients.getNormMd())
-//				);
 		System.out.println(fileSaveName+
-				(dwtCoefficients.getNormMh())+
-				"\t"+(dwtCoefficients.getNormMv())+
-				"\t"+(dwtCoefficients.getNormMd())+
-				"\t\t"+myFormatter.format(dwtCoefficients.getNormMa())+
-				"\t\tV,H,D Sum: "+myFormatter.format(dwtCoefficients.getNormMh()+dwtCoefficients.getNormMv()+dwtCoefficients.getNormMd())
+				(DWTCoefs.getNormMh())+
+				"\t"+(DWTCoefs.getNormMv())+
+				"\t"+(DWTCoefs.getNormMd())+
+				"\t\t"+myFormatter.format(DWTCoefs.getNormMa())+
+				"\t\tV,H,D Sum: "+myFormatter.format(DWTCoefs.getNormVHDSum())
 				);
 		if (fileSaveName!=null && fileSaveName != ""){
 			ma.saveToFile(fileSaveName+tranformation.getCaption()+FileNaming.mAverageCoef+FileNaming.ext,	"Average coefs "+fileSaveName);
@@ -67,7 +52,7 @@ public class DWT {
 			if (adoptiveMap!=null)
 				adoptiveMap.saveToFile(fileSaveName+tranformation.getCaption()+FileNaming.mTransfMap+FileNaming.ext, "Transformation mapping "+fileSaveName);
 		}
-		return dwtCoefficients;
+		return DWTCoefs;
 	}
 
 //	private float[] dwtCoef;

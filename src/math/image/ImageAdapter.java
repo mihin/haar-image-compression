@@ -24,7 +24,7 @@ public class ImageAdapter {
 //		if (h%2==1)h=h+1;
 		int[] rgbs = new int[w*h];
 		bufferedImage.getRGB(0, 0, w, h, rgbs, 0, w);
-		return new ImageObject(rgbs, w, h);
+		return new ImageObject(rgbs, w, h).setFilename(filename);
 	}
 
 	public ImageObject readImageCoefficients(String [] files){

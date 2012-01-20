@@ -1,7 +1,12 @@
 package math;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 
 import math.constants.FileNaming;
 import math.dwt.DWT;
@@ -17,11 +22,15 @@ import math.image.ImageAdapter;
 import math.image.ImageObject;
 
 public class Main {
+	File logFile = null;
 
 	public static void main(String [] in){
 		Main m = new Main();
+		m.logFile = new File("log.txt");
 		
-		m.decomposeImage(true);
+		
+		final boolean performReconstruction = false;
+		m.decomposeImage(performReconstruction);
 	
 //		m.loadDecompCoefs();
 		
@@ -30,101 +39,98 @@ public class Main {
 	
 	private void decomposeImage(boolean doReconstruct){
 		final String EXTENTION = ".jpg";
-//		final String FILENAME = "image";
-//		int inFileCount = 1;
-//		while (new File(FILENAME+(inFileCount++)+EXTENTION).exists()){}
-//		
-//		String filename = null;
-//		for (int i = 1; i < inFileCount; i++){
-//			filename = FILENAME+i+EXTENTION;
-//			decomposeImage(doReconstruct, filename);
-//		}
-		decomposeImage(doReconstruct, "image3"+EXTENTION);
-	}
-	private void decomposeImage(boolean doReconstruct, final String FILENAME){
-		if (! new File(FILENAME).exists()) {
-			System.err.println("Can't find file "+FILENAME);
-			return;
-		}
+		final String FILENAME = "image";
+		int inFileCount = 0;
+		while (new File(FILENAME+(++inFileCount)+EXTENTION).exists()){}
 		
+		String filename = null;
+		for (int i = 1; i < inFileCount; i++){
+			filename = FILENAME+i+EXTENTION;
+			decomposeImage(doReconstruct, filename);
+		}
+//		decomposeImage(doReconstruct, "image4"+EXTENTION);
+	}
+	private void decomposeImage(boolean doReconstruct, String filename){
 		ImageAdapter ia = new ImageAdapter();
 		ImageObject imageData = null;
 		try {
-			imageData = ia.readImageFile(FILENAME);
-			System.out.println("Image from file "+FILENAME+" was read(w="+imageData.width+", h="+imageData.height+").");
+			imageData = ia.readImageFile(filename);
+			System.out.println("Image from file "+filename+" was read(w="+imageData.width+", h="+imageData.height+").");
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		
-		if (imageData == null){
-			System.err.println("ImageData wasn't loaded, file = "+FILENAME);
 			return;
 		}
-
+		
+		final boolean logCoefsToFiles = false;
+		
+		DWTCoefficients[] coefClassic, coefAdaptive; 
+		coefClassic =  decomposeImage(doReconstruct, logCoefsToFiles, imageData, new HaarClassic());
+		coefAdaptive = decomposeImage(doReconstruct, logCoefsToFiles, imageData, new HaarAdaptive());
+		
+		//comparison output
+		DecimalFormat myFormatter = new DecimalFormat("#,000");
+		String [] colors = new String [] {"Red", "Green", "Blue"};
+		
+		System.out.println("Norm sum decay comparison:");
+		int j = 0;
+		String title = "\n"+filename.intern()+"\n";
+		String logs = null;
+		for (String color:colors){
+			logs =  title+
+					color+":\t" + myFormatter.format(coefClassic[j] .getNormVHDSum())
+					+ " -> "   + myFormatter.format(coefAdaptive[j].getNormVHDSum())
+					+ "\t("+(coefAdaptive[j].getNormVHDSum()*100/coefClassic[j] .getNormVHDSum())+"%)";
+			System.out.println(logs);
+			if (logFile!=null) {
+				try {
+					FileOutputStream fos = new FileOutputStream(logFile, true);
+					fos.write((logs+"\n").getBytes());
+					fos.close();
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			title = "";
+			j++;
+		}
+	}
+	private DWTCoefficients[] decomposeImage(boolean doReconstruct, boolean doLogCoefs,
+			ImageObject imageData, Wavelet2DTransformation transform){
 		//start Haar decomposition
-		DWT dwt =  new DWT(new HaarHorizotal());
+		DWT dwt =  new DWT(transform);
 		DWTCoefficients coefR, coefG, coefB;
 		System.out.println(dwt.getTranformation().getCaption()+": \nHor\t\tVer\t\tDiag\t\t\tAverage");
-//		coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red");
-//		coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green");
-//		coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue");
-		coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "");
-		coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "");
-		coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "");
+		if (doLogCoefs){
+			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red");
+			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green");
+			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue");
+		} else {
+			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "");
+			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "");
+			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "");
+		}
 		System.out.println();
 
 //		Matrix m = new Matrix(new float [][]{{1,2,3,4}, {4,6,1,2}, {1,2,3,4}, {5,6,7,2}}); 
-//		Matrix m = new Matrix(new float [][]{{1,2}, {3, 4}});
 //		DWTCoefficients coef = dwt.decompose( m , true, "testMatr");
 //		System.out.println("Reconstr "+ dwt.getTranformation().getCaption());
 //		Matrix reconst = dwt.reconstruct(coef);
 //		if (reconst.equals(m)) System.out.println("Reconstr M is the same");
 //		System.out.println();
-//		
-//		dwt =  new DWT(new HaarAdaptive());
-//		coef = dwt.decompose( m , true, "testMatr2");
-//		System.out.println("Reconstr "+ dwt.getTranformation().getCaption());
-//		if (reconst.equals(m)) System.out.println("Reconstr M is the same");
-//		reconst.equals(m);
-		
-		
-//		{ //dummy reconstruction
-//			ImageObject reconstImage = new ImageObject(
-//					new Matrix(imageData.pixelsR).get(),
-//					new Matrix(imageData.pixelsG).get(),
-//					new Matrix(imageData.pixelsB).get(),
-//					imageData.width, imageData.height);
-//			reconstImage.saveToImageFile("reconstructedImage22", "jpg");
-//			
-//		}
-		
 		
 		//reconstruction
 		if (doReconstruct){
 			simpleReconstruct(dwt, imageData, coefR, coefG, coefB);
 		}
 		
-		
-		//start AdoptiveHaar decomposition
-		dwt =  new DWT(new HaarAdaptive());
-		System.out.println(dwt.getTranformation().getCaption()+": \nHor\t\tVer\t\tDiag\t\t\tAverage");
-		coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red");
-		coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green");
-		coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue");
-//		coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "");
-//		coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "");
-//		coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "");
-		System.out.println();
-		
-		//reconstruction
-		if (doReconstruct){
-			simpleReconstruct(dwt, imageData, coefR, coefG, coefB);
-		}
+		return new DWTCoefficients[] {coefR, coefG, coefB};
 	}
 	
-	private int reconsCount = 1;
+//	private int reconsCount = 1;
 	private void simpleReconstruct(DWT dwt, ImageObject imageData, DWTCoefficients... coef){
-		System.out.println("Reconstruction attempt.. (image"+reconsCount+")");
+		System.out.println("Reconstruction attempt.. ("+imageData.getFilename()+")");
 		Matrix reconstR = dwt.reconstruct(coef[0]);
 		Matrix reconstG = dwt.reconstruct(coef[1]);
 		Matrix reconstB = dwt.reconstruct(coef[2]);
@@ -138,9 +144,13 @@ public class Main {
 				reconstR.get(), reconstG.get(), reconstB.get(), 
 				reconstR.getColumnsCount(), reconstR.getRowsCount()
 				);
-		reconstImage.saveToImageFile("reconstructedImage"+reconsCount++, "jpg");
+		reconstImage.saveToImageFile(imageData.getFilename()+"rec"+dwt.getTranformation().getCaption(), "jpg");
+		System.out.println();
 	}
 	
+	/**
+	 * Load coefs, make 4 filtered images 
+	 */
 	private void loadDecompCoefs(){
 		//loading image coefs
 		Wavelet2DTransformation tranformation = new HaarClassic();

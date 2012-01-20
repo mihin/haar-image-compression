@@ -70,5 +70,8 @@ public class DWTCoefficients implements Serializable{
 	public long getNormMa() {
 		return nMa;
 	}
+	public long getNormVHDSum() {
+		return nMv+nMh+nMd;
+	}
 	
 }

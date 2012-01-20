@@ -135,4 +135,12 @@ public class ImageObject {
 		}
 	}
 	
+	private String filename = "";
+	public ImageObject setFilename(String name){
+		filename = name.subSequence(0, name.lastIndexOf('.')).toString();
+		return this;
+	}
+	public String getFilename() {
+		return filename;
+	}
 }

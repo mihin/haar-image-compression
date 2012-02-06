@@ -10,7 +10,7 @@ import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
 
 import math.constants.FileNaming;
 
-public class Matrix implements Serializable{
+public class Matrix implements Serializable, Composable{
 	private static final long serialVersionUID = -6115000503774456837L;
 	
 	
@@ -147,6 +147,11 @@ public class Matrix implements Serializable{
 		}
 		
 		return equals;
+	}
+	
+	@Override
+	public Matrix compose() {
+		return this;
 	}
 	
 	

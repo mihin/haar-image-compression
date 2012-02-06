@@ -2,13 +2,14 @@ package math.dwt;
 
 import java.io.Serializable;
 
-public class DWTCoefficients implements Serializable{
+public class DWTCoefficients implements Serializable, Composable{
 	private static final long serialVersionUID = 7791903351562707262L;
 	
 	/**
 	 * Matrixes of coefficients (avarege, vertical, horizontal, diagonal)
 	 */
-	private Matrix ma, mv, mh, md, transformationsMap;
+	private Matrix mv, mh, md, transformationsMap;
+	private Composable ma;
 	/*
 	 * Norms of matrixes
 	 */
@@ -17,7 +18,7 @@ public class DWTCoefficients implements Serializable{
 	
 	//TODO make coefs srialisable to save load them
 	
-	public DWTCoefficients(Matrix ma, Matrix mv, Matrix mh, Matrix md, Matrix adoptiveMap, boolean calculateMatrixNorms) {
+	public DWTCoefficients(Composable ma, Matrix mv, Matrix mh, Matrix md, Matrix adoptiveMap, boolean calculateMatrixNorms) {
 		super();
 		this.ma = ma;
 		this.mv = mv;
@@ -31,12 +32,12 @@ public class DWTCoefficients implements Serializable{
 			nMh = mh.calculateNorm();
 			nMd = md.calculateNorm();
 			
-			nMa = ma.calculateNorm();
+			nMa = ma.compose().calculateNorm();
 		}
 	}
 
 	public Matrix getMa() {
-		return ma;
+		return ma.compose();
 	}
 
 	public Matrix getMv() {
@@ -72,6 +73,12 @@ public class DWTCoefficients implements Serializable{
 	}
 	public long getNormVHDSum() {
 		return nMv+nMh+nMd;
+	}
+
+	@Override
+	public Matrix compose() {
+		// TODO return composition for this coefs
+		return null;
 	}
 	
 }

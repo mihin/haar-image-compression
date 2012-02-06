@@ -1,7 +1,5 @@
 package math;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -15,9 +13,6 @@ import math.dwt.Matrix;
 import math.dwt.Wavelet2DTransformation;
 import math.dwt.wavelets.HaarAdaptive;
 import math.dwt.wavelets.HaarClassic;
-import math.dwt.wavelets.HaarDiagonal;
-import math.dwt.wavelets.HaarHorizotal;
-import math.dwt.wavelets.HaarVertical;
 import math.image.ImageAdapter;
 import math.image.ImageObject;
 
@@ -26,31 +21,37 @@ public class Main {
 
 	public static void main(String [] in){
 		Main m = new Main();
-		m.logFile = new File("log.txt");
+//		m.logFile = new File("log.txt");
 		
 		
 		final boolean performReconstruction = false;
-		m.decomposeImage(performReconstruction);
+		final int level = 1;
+		m.decomposeImage(performReconstruction, level);
 	
 //		m.loadDecompCoefs();
 		
 //		m.reconstructImage();
 	}
 	
-	private void decomposeImage(boolean doReconstruct){
-		final String EXTENTION = ".jpg";
+	private void decomposeImage(boolean doReconstruct, int level){
 		final String FILENAME = "image";
+		final String EXTENTION = ".jpg";
+		final String PICFOLDER = "pictures/";
+		
+		int fileLimit = 1;
+		
 		int inFileCount = 0;
-		while (new File(FILENAME+(++inFileCount)+EXTENTION).exists()){}
+		while ( fileLimit-->-1 && 
+				new File(PICFOLDER+FILENAME+(++inFileCount)+EXTENTION).exists()){}
 		
 		String filename = null;
 		for (int i = 1; i < inFileCount; i++){
-			filename = FILENAME+i+EXTENTION;
-			decomposeImage(doReconstruct, filename);
+			filename = PICFOLDER+FILENAME+i+EXTENTION;
+			decomposeImage(doReconstruct, filename, level);
 		}
 //		decomposeImage(doReconstruct, "image4"+EXTENTION);
 	}
-	private void decomposeImage(boolean doReconstruct, String filename){
+	private void decomposeImage(boolean doReconstruct, String filename, int level){
 		ImageAdapter ia = new ImageAdapter();
 		ImageObject imageData = null;
 		try {
@@ -61,27 +62,28 @@ public class Main {
 			return;
 		}
 		
-		final boolean logCoefsToFiles = false;
+		final boolean logCoefsToFile = false;
 		
 		DWTCoefficients[] coefClassic, coefAdaptive; 
-		coefClassic =  decomposeImage(doReconstruct, logCoefsToFiles, imageData, new HaarClassic());
-		coefAdaptive = decomposeImage(doReconstruct, logCoefsToFiles, imageData, new HaarAdaptive());
+		coefClassic =  decomposeImage(doReconstruct, logCoefsToFile, imageData, new HaarClassic(), level);
+		coefAdaptive = decomposeImage(doReconstruct, logCoefsToFile, imageData, new HaarAdaptive(), level);
 		
 		//comparison output
 		DecimalFormat myFormatter = new DecimalFormat("#,000");
 		String [] colors = new String [] {"Red", "Green", "Blue"};
 		
-		System.out.println("Norm sum decay comparison:");
-		int j = 0;
-		String title = "\n"+filename.intern()+"\n";
-		String logs = null;
-		for (String color:colors){
-			logs =  title+
-					color+":\t" + myFormatter.format(coefClassic[j] .getNormVHDSum())
-					+ " -> "   + myFormatter.format(coefAdaptive[j].getNormVHDSum())
-					+ "\t("+(coefAdaptive[j].getNormVHDSum()*100/coefClassic[j] .getNormVHDSum())+"%)";
-			System.out.println(logs);
-			if (logFile!=null) {
+		if (logFile!=null) {
+			System.out.println("Norm sum decay comparison:");
+			int j = 0;
+			String title = "\n"+filename.intern()+"\n";
+			String logs = null;
+			for (String color:colors){
+				logs =  title+
+						color+":\t" + myFormatter.format(coefClassic[j] .getNormVHDSum())
+						+ " -> "   + myFormatter.format(coefAdaptive[j].getNormVHDSum())
+						+ "\t("+(coefAdaptive[j].getNormVHDSum()*10000/coefClassic[j] .getNormVHDSum()/100f)+"%)";
+				System.out.println(logs);
+				
 				try {
 					FileOutputStream fos = new FileOutputStream(logFile, true);
 					fos.write((logs+"\n").getBytes());
@@ -91,25 +93,26 @@ public class Main {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				title = "";
+				j++;
 			}
-			title = "";
-			j++;
 		}
+		System.out.println();
 	}
 	private DWTCoefficients[] decomposeImage(boolean doReconstruct, boolean doLogCoefs,
-			ImageObject imageData, Wavelet2DTransformation transform){
+			ImageObject imageData, Wavelet2DTransformation transform, int level){
 		//start Haar decomposition
 		DWT dwt =  new DWT(transform);
 		DWTCoefficients coefR, coefG, coefB;
 		System.out.println(dwt.getTranformation().getCaption()+": \nHor\t\tVer\t\tDiag\t\t\tAverage");
 		if (doLogCoefs){
-			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red");
-			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green");
-			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue");
+			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red"	, level);
+			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green"	, level);
+			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue"	, level);
 		} else {
-			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "");
-			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "");
-			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "");
+			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, ""	, level);
+			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, ""	, level);
+			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, ""	, level);
 		}
 		System.out.println();
 

@@ -13,7 +13,6 @@ import math.constants.FileNaming;
 public class Matrix implements Serializable, Composable{
 	private static final long serialVersionUID = -6115000503774456837L;
 	
-	
 	private float [][] values;
 	private long norm = 0;
 	public Matrix(int rows, int columns){

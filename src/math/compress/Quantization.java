@@ -1,5 +1,8 @@
 package math.compress;
 
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import math.dwt.DWTCoefficients;
 import math.dwt.Matrix;
 
@@ -54,9 +57,21 @@ public class Quantization {
 	/* Huffman compression */
 	private int [] freqences;
 	private void doCompress(){
-		
+		//sort by freqs
+		int [] sort_freqs = sortByFreqs(freqences.clone());
+		//build tree
+//		java.util.Collections.checkedSortedMap(m, keyType, valueType)
+	TreeMap map = new TreeMap<String, String>();
+	map.
+	};
+		//convert quant array to bits
 		
 		cleanUp();
+	}
+
+	private int[] sortByFreqs(int[] freqences2) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	private void cleanUp() {

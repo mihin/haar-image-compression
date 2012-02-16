@@ -5,36 +5,60 @@ import java.util.Collections;
 
 public class FreqStatistics {
 	private ArrayList<StatisticsEntry> items;
+	private StatisticsEntry [] items2;
 	public FreqStatistics(int size){
 		items = new ArrayList<StatisticsEntry>(size);
+		items2 = new StatisticsEntry[size];
 	}
 	
 	private boolean isBlocked = false;
 	public void push(int value){
 		assert !isBlocked;
-		if (items.get(value)==null) items.add(value, new StatisticsEntry(value));
-		items.get(value).inc();
+//		if (items.get(value)==null) items.add(value, new StatisticsEntry(value));
+//		items.get(value).inc();
+		
+		if (items2[value] == null) items2[value] = new StatisticsEntry(value);
+		items2[value].inc();
 	}
 	public void sort(){
 		isBlocked = true;
 		
+		for (StatisticsEntry entry:items2){
+			if (entry!=null) items.add(entry);
+		}
+		
 		System.out.println("FreqStatistics, sort(); items size = "+items.size());
 		//clean null items
-		items.removeAll(Collections.singletonList(null));
-		System.out.println("FreqStatistics, sort(); remove null, items size = "+items.size());
+//		items.removeAll(Collections.singletonList(null));
+//		System.out.println("FreqStatistics, sort(); remove null, items size = "+items.size());
 
 		Collections.sort(items);
+		System.out.println("FreqStatistics, sort(); items size = "+items.size());
 	}
 	
 	public StatisticsTreeEntry buildTree(){
 		StatisticsTreeEntry treeRoot = null, minLeaf1, minLeaf2;
+		StatisticsEntry item1, item2;
 		while (items.size() > 1){
-			minLeaf1 = new StatisticsTreeEntry(items.get(0));
-			minLeaf2 = new StatisticsTreeEntry(items.get(1));
+			item1 = items.remove(0);
+			item2 = items.remove(0);
+//			if (item1 instanceof StatisticsTreeEntry) {
+//				minLeaf1 = (StatisticsTreeEntry) item1;
+//			} else {
+//				minLeaf1 = new StatisticsTreeEntry(item1);
+//			}
+			minLeaf1 = (item1 instanceof StatisticsTreeEntry)?(StatisticsTreeEntry) item1:new StatisticsTreeEntry(item1);
+			minLeaf2 = (item2 instanceof StatisticsTreeEntry)?(StatisticsTreeEntry) item2:new StatisticsTreeEntry(item2);
+//			if (item2 instanceof StatisticsTreeEntry) {
+//				minLeaf2 = (StatisticsTreeEntry) item2;
+//			} else {
+//				minLeaf2 = new StatisticsTreeEntry(item2);
+//			}
 			treeRoot = new StatisticsTreeEntry(minLeaf1, minLeaf2);
 			
-			items.remove(0);
-			items.remove(1);
+			System.out.println(items.size()+" items, leaf1="+minLeaf1+", leaf2="+minLeaf2+
+					", node="+treeRoot/*+" with "+treeRoot.countSubnotes(treeRoot)+" siblings"*/);
+			
 			items.add(treeRoot);
 			Collections.sort(items); 
 		}
@@ -51,5 +75,4 @@ public class FreqStatistics {
 		return sb.toString();
 	}
 	
-
 }

@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
+import math.compress.Quantization;
 import math.constants.FileNaming;
 import math.dwt.DWT;
 import math.dwt.DWTCoefficients;
@@ -98,6 +99,9 @@ public class Main {
 			}
 		}
 		System.out.println();
+		
+		System.out.println("--== Quantization ==--");
+		new Quantization(32).process(coefClassic[0]);  
 	}
 	private DWTCoefficients[] decomposeImage(boolean doReconstruct, boolean doLogCoefs,
 			ImageObject imageData, Wavelet2DTransformation transform, int level){

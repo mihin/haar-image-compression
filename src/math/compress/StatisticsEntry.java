@@ -6,6 +6,10 @@ public class StatisticsEntry implements Comparable<StatisticsEntry>{
 	public StatisticsEntry(int val){
 		value = val;
 	}
+	protected StatisticsEntry(StatisticsEntry entry){
+		value = entry.value;
+		frequency = entry.frequency;
+	}
 	public void inc(){
 		frequency++;
 	}
@@ -33,7 +37,8 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	 * @param entry
 	 */
 	public StatisticsTreeEntry(StatisticsEntry entry) {
-		super(entry.getValue());
+		super(entry);
+		leftLeaf = rightLeaf = null;
 	}
 	
 	private String code = "";
@@ -48,27 +53,45 @@ class StatisticsTreeEntry extends StatisticsEntry {
 		leftLeaf = left;
 		rightLeaf = right;
 		
-		leftLeaf.addPrefix('1');
-		rightLeaf.addPrefix('0');
+		leftLeaf.addPrefix('0');
+		rightLeaf.addPrefix('1');
 		
-		frequency = left.frequency+right.frequency;
+		frequency = left.frequency + right.frequency;
 	}
 	private void addPrefix(char c){
 		code+=c;
-		leftLeaf.addPrefix(c);
-		rightLeaf.addPrefix(c);
+		if (leftLeaf!=null)  leftLeaf.addPrefix(c);
+		if (rightLeaf!=null) rightLeaf.addPrefix(c);
 	}
 	
 	public void printCodes(){
 		printLeafsCode(this);
 	}
+	
+	int depth = 100;
 	public void printLeafsCode(StatisticsTreeEntry node){
-		if (node==null) return;
-		if (leftLeaf==null && rightLeaf==null){ //this is a leaf
-			System.out.print(getValue()+" "+code+"; ");
+		if (node==null || depth--<0) return;
+		if (node.leftLeaf==null && node.rightLeaf==null){ //this is a leaf
+			System.out.print(node);
 		} else { //this a node
-			printLeafsCode(leftLeaf);
-			printLeafsCode(rightLeaf);
+//			System.out.print(node);
+			printLeafsCode(node.leftLeaf);
+			printLeafsCode(node.rightLeaf);
 		}
+//		boolean isLeaf = true;
+//		if (!(isLeaf=leftLeaf==null && isLeaf)) printLeafsCode(leftLeaf); 
+//		if (!(isLeaf=rightLeaf==null && isLeaf)) printLeafsCode(rightLeaf);
+//		if (isLeaf) System.out.print(getValue()+" "+code+"; ");
+	}
+	@Override
+	public String toString() {
+		return super.toString()+" \""+code+"\"";
+	}
+	
+	public int countSubnotes(StatisticsTreeEntry entry){
+		if (entry==null) return 0;
+		int c = countSubnotes(entry.leftLeaf);
+		c += countSubnotes(entry.rightLeaf);
+		return c+1;
 	}
 }

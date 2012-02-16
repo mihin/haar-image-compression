@@ -41,4 +41,15 @@ public class FreqStatistics {
 		items.clear();
 		return treeRoot;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		for (StatisticsEntry entry:items){
+			sb.append(entry!=null?entry.toString()+", ":"null, ");
+		}
+		return sb.toString();
+	}
+	
+
 }

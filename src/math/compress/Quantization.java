@@ -1,8 +1,5 @@
 package math.compress;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
-
 import math.dwt.DWTCoefficients;
 import math.dwt.Matrix;
 
@@ -16,14 +13,15 @@ public class Quantization {
 		LEVELS = levels;
 		DIVIDER = MAX_VAL/LEVELS;
 		
-		freqences = new int [LEVELS];
+//		freqences = new int [LEVELS];
+		freqStat = new FreqStatistics(LEVELS);
 	}
 	
 	private int [] quantizied;
 	public void process(DWTCoefficients image){
 		Matrix m = image.getMv();
 		quantizied = new int [m.getColumnsCount()*m.getRowsCount()];
-		
+
 		processMatrix(m);
 //		processMatrix(image.getMh());
 //		processMatrix(image.getMd());
@@ -38,7 +36,9 @@ public class Quantization {
 			for (int j=0;j<m.getColumnsCount();j++){
 				b = quant(m.get()[i][j]);
 				quantizied[i*rows + j] = b;
-				freqences[b]++;
+//				freqences[b]++;
+				
+				freqStat.push(b);
 			}
 		}
 		
@@ -55,16 +55,19 @@ public class Quantization {
 	
 	
 	/* Huffman compression */
-	private int [] freqences;
+//	private int [] freqences;
+	private FreqStatistics freqStat;
 	private void doCompress(){
+		System.out.println("doCompress, start, frequences:\n"+freqStat.toString());
 		//sort by freqs
-		int [] sort_freqs = sortByFreqs(freqences.clone());
+		freqStat.sort();
+		System.out.println("doCompress, sorted, frequences:\n"+freqStat.toString());
+		
 		//build tree
-//		java.util.Collections.checkedSortedMap(m, keyType, valueType)
-	TreeMap map = new TreeMap<String, String>();
-	map.
-	};
+		StatisticsTreeEntry treeRoot = freqStat.buildTree();
+
 		//convert quant array to bits
+		treeRoot.printCodes();
 		
 		cleanUp();
 	}
@@ -75,6 +78,6 @@ public class Quantization {
 	}
 
 	private void cleanUp() {
-		for (int i=0; i<LEVELS;i++) freqences[i]=0;
+//		for (int i=0; i<LEVELS;i++) freqences[i]=0;
 	}
 }

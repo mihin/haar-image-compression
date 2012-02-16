@@ -19,6 +19,12 @@ public class StatisticsEntry implements Comparable<StatisticsEntry>{
 	public int getFrequency() {
 		return frequency;
 	}
+	@Override
+	public String toString() {
+		return value+"("+frequency+")";
+	}
+	
+	
 }
 
 class StatisticsTreeEntry extends StatisticsEntry {
@@ -53,4 +59,16 @@ class StatisticsTreeEntry extends StatisticsEntry {
 		rightLeaf.addPrefix(c);
 	}
 	
+	public void printCodes(){
+		printLeafsCode(this);
+	}
+	public void printLeafsCode(StatisticsTreeEntry node){
+		if (node==null) return;
+		if (leftLeaf==null && rightLeaf==null){ //this is a leaf
+			System.out.print(getValue()+" "+code+"; ");
+		} else { //this a node
+			printLeafsCode(leftLeaf);
+			printLeafsCode(rightLeaf);
+		}
+	}
 }

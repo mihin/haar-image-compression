@@ -67,17 +67,36 @@ public class Quantization {
 		StatisticsTreeEntry treeRoot = freqStat.buildTree();
 
 		//convert quant array to bits
-		treeRoot.printCodes();
+//		treeRoot.printCodes();
 		
+		//get Map Value -> Code
+		HTreeMap codes = new HTreeMap();
+		treeRoot.fetchCodes(codes);
+		
+		System.out.println(codes);
+		
+		//process quatizied Matrix with H-Tree
+		processCompression(codes);
+		
+		//clean
 		cleanUp();
 	}
-
-	private int[] sortByFreqs(int[] freqences2) {
-		// TODO Auto-generated method stub
-		return null;
+	private void processCompression(HTreeMap codes){
+		assert quantizied!=null;
+		boolean[] bits = null;
+		for (int i=0; i<quantizied.length; i++){
+			try {
+				bits = codes.getBits(quantizied[i]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+				
 	}
 
 	private void cleanUp() {
 //		for (int i=0; i<LEVELS;i++) freqences[i]=0;
+		freqStat.free();
+		System.gc();
 	}
 }

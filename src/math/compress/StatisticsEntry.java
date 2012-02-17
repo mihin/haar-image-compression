@@ -53,39 +53,40 @@ class StatisticsTreeEntry extends StatisticsEntry {
 		leftLeaf = left;
 		rightLeaf = right;
 		
-		leftLeaf.addPrefix('0');
-		rightLeaf.addPrefix('1');
+		leftLeaf.addPrefix('1');
+		rightLeaf.addPrefix('0');
 		
 		frequency = left.frequency + right.frequency;
 	}
 	private void addPrefix(char c){
-		code+=c;
+		code=c+code;
 		if (leftLeaf!=null)  leftLeaf.addPrefix(c);
 		if (rightLeaf!=null) rightLeaf.addPrefix(c);
 	}
 	
-	public void printCodes(){
+//	public void printCodes(){
+//		printLeafsCode(this);
+//	}
+	
+	private HTreeMap mHTreeMap;
+	public void fetchCodes(HTreeMap map){
+		mHTreeMap = map;
 		printLeafsCode(this);
 	}
 	
-	int depth = 100;
 	public void printLeafsCode(StatisticsTreeEntry node){
-		if (node==null || depth--<0) return;
+		if (node==null) return;
 		if (node.leftLeaf==null && node.rightLeaf==null){ //this is a leaf
-			System.out.print(node);
-		} else { //this a node
+			mHTreeMap.add(node.getValue(), node.code);
 //			System.out.print(node);
-			printLeafsCode(node.leftLeaf);
+		} else { //this a node
 			printLeafsCode(node.rightLeaf);
+			printLeafsCode(node.leftLeaf);
 		}
-//		boolean isLeaf = true;
-//		if (!(isLeaf=leftLeaf==null && isLeaf)) printLeafsCode(leftLeaf); 
-//		if (!(isLeaf=rightLeaf==null && isLeaf)) printLeafsCode(rightLeaf);
-//		if (isLeaf) System.out.print(getValue()+" "+code+"; ");
 	}
 	@Override
 	public String toString() {
-		return super.toString()+" \""+code+"\"";
+		return super.toString()+" \""+code+"\"; ";
 	}
 	
 	public int countSubnotes(StatisticsTreeEntry entry){

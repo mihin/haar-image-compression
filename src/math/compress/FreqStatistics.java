@@ -42,23 +42,10 @@ public class FreqStatistics {
 		while (items.size() > 1){
 			item1 = items.remove(0);
 			item2 = items.remove(0);
-//			if (item1 instanceof StatisticsTreeEntry) {
-//				minLeaf1 = (StatisticsTreeEntry) item1;
-//			} else {
-//				minLeaf1 = new StatisticsTreeEntry(item1);
-//			}
 			minLeaf1 = (item1 instanceof StatisticsTreeEntry)?(StatisticsTreeEntry) item1:new StatisticsTreeEntry(item1);
 			minLeaf2 = (item2 instanceof StatisticsTreeEntry)?(StatisticsTreeEntry) item2:new StatisticsTreeEntry(item2);
-//			if (item2 instanceof StatisticsTreeEntry) {
-//				minLeaf2 = (StatisticsTreeEntry) item2;
-//			} else {
-//				minLeaf2 = new StatisticsTreeEntry(item2);
-//			}
 			treeRoot = new StatisticsTreeEntry(minLeaf1, minLeaf2);
-			
-			System.out.println(items.size()+" items, leaf1="+minLeaf1+", leaf2="+minLeaf2+
-					", node="+treeRoot/*+" with "+treeRoot.countSubnotes(treeRoot)+" siblings"*/);
-			
+//			System.out.println(items.size()+" items, leaf1="+minLeaf1+", leaf2="+minLeaf2+", node="+treeRoot);
 			items.add(treeRoot);
 			Collections.sort(items); 
 		}
@@ -75,4 +62,8 @@ public class FreqStatistics {
 		return sb.toString();
 	}
 	
+	public void free(){
+		items = null; 
+		items2 = null;
+	}
 }

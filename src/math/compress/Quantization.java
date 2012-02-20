@@ -1,5 +1,8 @@
 package math.compress;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import math.dwt.DWTCoefficients;
 import math.dwt.Matrix;
 
@@ -22,28 +25,30 @@ public class Quantization {
 		Matrix m = image.getMv();
 		quantizied = new int [m.getColumnsCount()*m.getRowsCount()];
 
-		processMatrix(m);
+		List<Boolean> haffmanCodes = processMatrix(m);
+		StringBuffer sb = new StringBuffer();
+		for (Boolean b:haffmanCodes)sb.append(b?'1':'0');
+		haffmanCodes.clear();
+		System.out.println("Haffman encoded values:\n"+sb.toString());
+		
 //		processMatrix(image.getMh());
 //		processMatrix(image.getMd());
 	}
 
-	private void processMatrix(Matrix m) {
+	private List<Boolean> processMatrix(Matrix m) {
 		final int rows = m.getRowsCount();
 		int b=0;
 		
-		//matrix quantization and calculating frequences
+		//Quantization and calculating frequences
 		for (int i=0;i<rows;i++){
 			for (int j=0;j<m.getColumnsCount();j++){
 				b = quant(m.get()[i][j]);
 				quantizied[i*rows + j] = b;
-//				freqences[b]++;
-				
 				freqStat.push(b);
 			}
 		}
-		
 		//Huffman compression
-		doCompress();
+		return doCompress();
 	}
 
 	private int quant(float f) {
@@ -57,8 +62,7 @@ public class Quantization {
 	/* Huffman compression */
 //	private int [] freqences;
 	private FreqStatistics freqStat;
-	private void doCompress(){
-		System.out.println("doCompress, start, frequences:\n"+freqStat.toString());
+	private List<Boolean> doCompress(){
 		//sort by freqs
 		freqStat.sort();
 		System.out.println("doCompress, sorted, frequences:\n"+freqStat.toString());
@@ -66,36 +70,43 @@ public class Quantization {
 		//build tree
 		StatisticsTreeEntry treeRoot = freqStat.buildTree();
 
-		//convert quant array to bits
-//		treeRoot.printCodes();
-		
 		//get Map Value -> Code
-		HTreeMap codes = new HTreeMap();
-		treeRoot.fetchCodes(codes);
+		HTreeMap codesTree = new HTreeMap();
+		treeRoot.fetchCodes(codesTree);
 		
-		System.out.println(codes);
+		System.out.println(codesTree);
 		
-		//process quatizied Matrix with H-Tree
-		processCompression(codes);
+		//process quantizied Matrix with H-Tree, ?and compress
+		List<Boolean> res = processCompression(codesTree);
+		System.out.println("Decoded by Haffman, bytes ");
 		
-		//clean
-		cleanUp();
+		//TODO Convert HTree to output format
+		
+		//TODO assemble formated HTree and compressed HCode
+		
+		//clean - everything except assembled Tree and compressed data
+		cleanUp();		
+		
+		return res;
 	}
-	private void processCompression(HTreeMap codes){
+	private List<Boolean> processCompression(HTreeMap codes){
 		assert quantizied!=null;
-		boolean[] bits = null;
+//		StringBuffer sb = new StringBuffer();
+//		boolean[] bits = null;
+		List<Boolean> bits = null;
+		List<Boolean> haffmanCode = new ArrayList<Boolean>();
 		for (int i=0; i<quantizied.length; i++){
-			try {
-				bits = codes.getBits(quantizied[i]);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			bits = codes.getBits(quantizied[i]);
+			haffmanCode.addAll(bits);
+			bits.clear();
 		}
-				
+		
+		// TODO ?compress haffmanCode 
+		
+		return haffmanCode;
 	}
 
 	private void cleanUp() {
-//		for (int i=0; i<LEVELS;i++) freqences[i]=0;
 		freqStat.free();
 		System.gc();
 	}

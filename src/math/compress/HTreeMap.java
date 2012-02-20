@@ -1,6 +1,7 @@
 package math.compress;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class HTreeMap {
 	private ArrayList<HCode> items;
@@ -22,9 +23,21 @@ public class HTreeMap {
 		return sb.toString();
 	}
 	
-	public boolean[] getBits(int value) throws Exception{
+	public List<Boolean> getBits(int value){
+		try {
+			for (HCode c:items)
+				if (value == c.getValue()) 
+					return c.getBits();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;	
+		}
+		return null;
+	}
+	public String getCodeString(int value){
 		for (HCode c:items)
-			if (value == c.getValue()) return c.getBits();
+			if (value == c.getValue()) 
+				return c.getCode();
 		return null;
 	}
 }
@@ -47,16 +60,25 @@ class HCode{
 	public String getCode() {
 		return code;
 	}
-	public boolean[] getBits() throws Exception {
-		boolean[] bits = new boolean[code.length()];
-//		for (Character c:code.toCharArray()){
-//			if (c.equals('0'))
+//	public boolean[] getBits() throws Exception {
+//		boolean[] bits = new boolean[code.length()];
+////		for (Character c:code.toCharArray()){
+////			if (c.equals('0'))
+////		}
+//		for (int i=0;i<code.length();i++)	{
+//			if (code.charAt(i)=='0') bits[i] = false; 
+//			else if (code.charAt(i)=='1') bits[i] = true;
+//			else throw new Exception("blabla");
 //		}
+//		return bits;
+//	}
+	public List<Boolean> getBits() throws Exception {
+		final List<Boolean> res = new ArrayList<Boolean>();
 		for (int i=0;i<code.length();i++)	{
-			if (code.charAt(i)=='0') bits[i] = false; 
-			else if (code.charAt(i)=='1') bits[i] = true;
+			if (code.charAt(i)=='0') res.add(false); 
+			else if (code.charAt(i)=='1') res.add(true);
 			else throw new Exception("blabla");
 		}
-		return bits;
+		return res;
 	}
 }

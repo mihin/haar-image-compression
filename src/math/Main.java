@@ -101,7 +101,8 @@ public class Main {
 		System.out.println();
 		
 		System.out.println("--== Quantization ==--");
-		new Quantization(32).process(coefClassic[0]);  
+		Quantization mQuantization = new Quantization(32);
+		mQuantization.process(coefClassic[0]);  
 	}
 	private DWTCoefficients[] decomposeImage(boolean doReconstruct, boolean doLogCoefs,
 			ImageObject imageData, Wavelet2DTransformation transform, int level){

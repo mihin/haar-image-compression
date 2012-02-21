@@ -100,7 +100,6 @@ public class Quantization {
 			haffmanCode.addAll(bits);
 			bits.clear();
 		}
-		
 		// TODO ?compress haffmanCode 
 		
 		return haffmanCode;

@@ -1,5 +1,19 @@
 package math.compress;
 
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import math.compress.utils.BitInputStream;
+import math.compress.utils.BitOutputStream;
+
 public class StatisticsEntry implements Comparable<StatisticsEntry>{
 	private int value = -1;
 	protected int frequency = 0;
@@ -58,6 +72,23 @@ class StatisticsTreeEntry extends StatisticsEntry {
 		
 		frequency = left.frequency + right.frequency;
 	}
+	
+	public static StatisticsTreeEntry buildTree(ArrayList<StatisticsEntry> items){
+		StatisticsTreeEntry treeRoot = null, minLeaf1, minLeaf2;
+		StatisticsEntry item1, item2;
+		while (items.size() > 1){
+			item1 = items.remove(0);
+			item2 = items.remove(0);
+			minLeaf1 = (item1 instanceof StatisticsTreeEntry)?(StatisticsTreeEntry) item1:new StatisticsTreeEntry(item1);
+			minLeaf2 = (item2 instanceof StatisticsTreeEntry)?(StatisticsTreeEntry) item2:new StatisticsTreeEntry(item2);
+			treeRoot = new StatisticsTreeEntry(minLeaf1, minLeaf2);
+//			System.out.println(items.size()+" items, leaf1="+minLeaf1+", leaf2="+minLeaf2+", node="+treeRoot);
+			items.add(treeRoot);
+			Collections.sort(items); 
+		}
+		items.clear();
+		return treeRoot;
+	}
 	private void addPrefix(char c){
 		code=c+code;
 		if (leftLeaf!=null)  leftLeaf.addPrefix(c);
@@ -68,31 +99,129 @@ class StatisticsTreeEntry extends StatisticsEntry {
 //		printLeafsCode(this);
 //	}
 	
-	private HTreeMap mHTreeMap;
+ 
+//	private HTreeMap mHTreeMap;
 	public void fetchCodes(HTreeMap map){
-		mHTreeMap = map;
-		printLeafsCode(this);
+//		mHTreeMap = map;
+		printLeafsCode(this, map);
 	}
-	
-	public void printLeafsCode(StatisticsTreeEntry node){
+
+	// TODO benchmark speed with HTreeMap in params and as a class property
+	private void printLeafsCode(StatisticsTreeEntry node, HTreeMap mHTreeMap){
 		if (node==null) return;
 		if (node.leftLeaf==null && node.rightLeaf==null){ //this is a leaf
 			mHTreeMap.add(node.getValue(), node.code);
 //			System.out.print(node);
 		} else { //this a node
-			printLeafsCode(node.rightLeaf);
-			printLeafsCode(node.leftLeaf);
+			printLeafsCode(node.rightLeaf, mHTreeMap);
+			printLeafsCode(node.leftLeaf, mHTreeMap);
 		}
 	}
+	
+	private StringBuffer bitsOutput;
+	public void toBits(){
+//		List<Boolean> bits = new ArrayList<Boolean>();
+		BitOutputStream bos = null;
+		try {
+			bos = new BitOutputStream(new FileOutputStream("bitOut.txt"));
+			bitsOutput = new StringBuffer();
+			toBits(this, bos);
+			bos.close();
+			System.out.println("Tree in bits:\n"+bitsOutput.toString());
+			
+//			BitInputStream bis = new BitInputStream(new FileInputStream("bitOut.txt"));
+//			bitsOutput = new StringBuffer();
+//			int b;
+//			while (true){
+//				try {b = bis.readBit();bitsOutput.append(b);
+//				} catch (EOFException e) {break;}	
+//			}
+//			System.out.println("Tree in bits (BitInputStream):\n"+bitsOutput.toString());
+//			bis.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+//		return bos.;
+	}
+	
+	private void toBits(StatisticsTreeEntry node, BitOutputStream bos) throws IOException{
+		if (node==null || bos==null) return;
+		if (node.leftLeaf==null && node.rightLeaf==null){ //this is a leaf
+//			mHTreeMap.add(node.getValue(), node.code);
+//			System.out.print(node);
+//			bits.add(false);	//is leaf
+			bos.writeBit(0);
+			bos.writeBits(node.getValue(), (short) 8);
+			
+			bitsOutput.append("0[");
+			bitsOutput.append(node.getValue()+"] ");
+		} else { //this a node
+			bos.writeBit(1);	//this is Node
+			bitsOutput.append("1 ");
+			
+			bos.writeBit(0); 	//parse Left child
+			bitsOutput.append('0');
+			toBits(node.rightLeaf, bos);
+			bos.writeBit(1);	//parse Right child
+			bitsOutput.append('1');
+			toBits(node.leftLeaf, bos);
+		}
+	}
+	
+	public static StatisticsTreeEntry readTree(){
+		StatisticsTreeEntry treeRoot = null, leafLeft, leafRight;
+		StatisticsEntry item1, item2;
+		try {
+			BitInputStream bis = new BitInputStream(new FileInputStream("bitOut.txt"));
+			StringBuffer bitsOutput = new StringBuffer();
+			int b;
+			b = bis.readBit();
+			bitsOutput.append(b);
+			
+//			while (true){
+				try {
+					b = bis.readBit();
+					bitsOutput.append(b);
+					
+					if (b==0)	//left
+						leafLeft = readNextNode(bis);
+				} catch (EOFException e) {
+					
+				} catch (IOException e) {
+//					break;
+				}	
+//			}
+			System.out.println("Tree in bits was read:\n"+bitsOutput.toString());
+			bis.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return treeRoot;
+	}
+	private static StatisticsTreeEntry readNextNode(BitInputStream bis) throws IOException{
+		int b = bis.readBit();
+		if (b == 0)	//is leaf. Reading value
+			return (StatisticsTreeEntry) new StatisticsEntry(bis.readBits((short)8));
+		else {	//is Node,
+			StatisticsTreeEntry left = null, right = null;
+			
+			return new StatisticsTreeEntry(left, right);
+		}
+	}
+	
+	
 	@Override
 	public String toString() {
 		return super.toString()+" \""+code+"\"; ";
 	}
-	
-	public int countSubnotes(StatisticsTreeEntry entry){
-		if (entry==null) return 0;
-		int c = countSubnotes(entry.leftLeaf);
-		c += countSubnotes(entry.rightLeaf);
-		return c+1;
-	}
+//	public int countSubnotes(StatisticsTreeEntry entry){
+//		if (entry==null) return 0;
+//		int c = countSubnotes(entry.leftLeaf);
+//		c += countSubnotes(entry.rightLeaf);
+//		return c+1;
+//	}
 }

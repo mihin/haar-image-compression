@@ -37,20 +37,21 @@ public class FreqStatistics {
 	}
 	
 	public StatisticsTreeEntry buildTree(){
-		StatisticsTreeEntry treeRoot = null, minLeaf1, minLeaf2;
-		StatisticsEntry item1, item2;
-		while (items.size() > 1){
-			item1 = items.remove(0);
-			item2 = items.remove(0);
-			minLeaf1 = (item1 instanceof StatisticsTreeEntry)?(StatisticsTreeEntry) item1:new StatisticsTreeEntry(item1);
-			minLeaf2 = (item2 instanceof StatisticsTreeEntry)?(StatisticsTreeEntry) item2:new StatisticsTreeEntry(item2);
-			treeRoot = new StatisticsTreeEntry(minLeaf1, minLeaf2);
-//			System.out.println(items.size()+" items, leaf1="+minLeaf1+", leaf2="+minLeaf2+", node="+treeRoot);
-			items.add(treeRoot);
-			Collections.sort(items); 
-		}
-		items.clear();
-		return treeRoot;
+		return StatisticsTreeEntry.buildTree(items);
+//		StatisticsTreeEntry treeRoot = null, minLeaf1, minLeaf2;
+//		StatisticsEntry item1, item2;
+//		while (items.size() > 1){
+//			item1 = items.remove(0);
+//			item2 = items.remove(0);
+//			minLeaf1 = (item1 instanceof StatisticsTreeEntry)?(StatisticsTreeEntry) item1:new StatisticsTreeEntry(item1);
+//			minLeaf2 = (item2 instanceof StatisticsTreeEntry)?(StatisticsTreeEntry) item2:new StatisticsTreeEntry(item2);
+//			treeRoot = new StatisticsTreeEntry(minLeaf1, minLeaf2);
+////			System.out.println(items.size()+" items, leaf1="+minLeaf1+", leaf2="+minLeaf2+", node="+treeRoot);
+//			items.add(treeRoot);
+//			Collections.sort(items); 
+//		}
+//		items.clear();
+//		return treeRoot;
 	}
 	
 	@Override

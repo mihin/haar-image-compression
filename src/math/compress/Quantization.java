@@ -26,6 +26,7 @@ public class Quantization {
 		quantizied = new int [m.getColumnsCount()*m.getRowsCount()];
 
 		List<Boolean> haffmanCodes = processMatrix(m);
+		
 		StringBuffer sb = new StringBuffer();
 		for (Boolean b:haffmanCodes)sb.append(b?'1':'0');
 		haffmanCodes.clear();
@@ -78,9 +79,10 @@ public class Quantization {
 		
 		//process quantizied Matrix with H-Tree, ?and compress
 		List<Boolean> res = processCompression(codesTree);
-		System.out.println("Decoded by Haffman, bytes ");
+//		System.out.println("Decoded by Haffman, bytes ");
 		
 		//TODO Convert HTree to output format
+		treeRoot.toBits();
 		
 		//TODO assemble formated HTree and compressed HCode
 		

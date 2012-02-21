@@ -1,15 +1,11 @@
 package math.compress;
 
-import java.io.EOFException;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import math.compress.utils.BitInputStream;
 import math.compress.utils.BitOutputStream;
@@ -101,9 +97,11 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	
  
 //	private HTreeMap mHTreeMap;
-	public void fetchCodes(HTreeMap map){
+	public HTreeMap fetchCodesMap(){
 //		mHTreeMap = map;
+		HTreeMap map = new HTreeMap(); 
 		printLeafsCode(this, map);
+		return map;
 	}
 
 	// TODO benchmark speed with HTreeMap in params and as a class property
@@ -128,16 +126,6 @@ class StatisticsTreeEntry extends StatisticsEntry {
 			toBits(this, bos);
 			bos.close();
 			System.out.println("Tree in bits:\n"+bitsOutput.toString());
-			
-//			BitInputStream bis = new BitInputStream(new FileInputStream("bitOut.txt"));
-//			bitsOutput = new StringBuffer();
-//			int b;
-//			while (true){
-//				try {b = bis.readBit();bitsOutput.append(b);
-//				} catch (EOFException e) {break;}	
-//			}
-//			System.out.println("Tree in bits (BitInputStream):\n"+bitsOutput.toString());
-//			bis.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -172,44 +160,27 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	}
 	
 	public static StatisticsTreeEntry readTree(){
-		StatisticsTreeEntry treeRoot = null, leafLeft, leafRight;
-		StatisticsEntry item1, item2;
 		try {
 			BitInputStream bis = new BitInputStream(new FileInputStream("bitOut.txt"));
-			StringBuffer bitsOutput = new StringBuffer();
-			int b;
-			b = bis.readBit();
-			bitsOutput.append(b);
-			
-//			while (true){
-				try {
-					b = bis.readBit();
-					bitsOutput.append(b);
-					
-					if (b==0)	//left
-						leafLeft = readNextNode(bis);
-				} catch (EOFException e) {
-					
-				} catch (IOException e) {
-//					break;
-				}	
-//			}
-			System.out.println("Tree in bits was read:\n"+bitsOutput.toString());
+			StatisticsTreeEntry root = readNextNode(bis);
 			bis.close();
+			return root;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		return treeRoot;
+		return null;
 	}
 	private static StatisticsTreeEntry readNextNode(BitInputStream bis) throws IOException{
-		int b = bis.readBit();
+		int b = bis.readBit(); //type of the node
 		if (b == 0)	//is leaf. Reading value
-			return (StatisticsTreeEntry) new StatisticsEntry(bis.readBits((short)8));
+			return new StatisticsTreeEntry(new StatisticsEntry(bis.readBits((short)8)));
 		else {	//is Node,
 			StatisticsTreeEntry left = null, right = null;
-			
-			return new StatisticsTreeEntry(left, right);
+			b = bis.readBit(); //0 = left
+			left = readNextNode(bis);
+			b = bis.readBit(); //1 = right
+			right = readNextNode(bis);
+			return new StatisticsTreeEntry(right,left);
 		}
 	}
 	

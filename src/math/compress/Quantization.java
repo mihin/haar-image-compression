@@ -25,18 +25,41 @@ public class Quantization {
 		Matrix m = image.getMv();
 		quantizied = new int [m.getColumnsCount()*m.getRowsCount()];
 
-		List<Boolean> haffmanCodes = processMatrix(m);
+		//quatization
+		processMatrixQuatization(m);
 		
+		//Huffman compression
+		List<Boolean> haffmanCodes = doCompress();
+
+		//print Haffman code
 		StringBuffer sb = new StringBuffer();
 		for (Boolean b:haffmanCodes)sb.append(b?'1':'0');
-		haffmanCodes.clear();
 		System.out.println("Haffman encoded values:\n"+sb.toString());
 		
+		
+		System.out.println("\nDecompression. restoring Haffman tree..");
+		//read HTree
+		StatisticsTreeEntry mHTree = parseHTree();
+
+		//get Map Value -> Code
+		HTreeMap codesTree = mHTree.fetchCodesMap();
+		System.out.println(codesTree);
+		
+		//decode Matrix from Haffman codes
+		try {
+			Matrix decodedMatrix = decodeMatrix(m.getRowsCount(), m.getColumnsCount(), haffmanCodes, codesTree);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		
+		
+		haffmanCodes.clear();
 //		processMatrix(image.getMh());
 //		processMatrix(image.getMd());
 	}
 
-	private List<Boolean> processMatrix(Matrix m) {
+	private void processMatrixQuatization(Matrix m) {
 		final int rows = m.getRowsCount();
 		int b=0;
 		
@@ -48,8 +71,6 @@ public class Quantization {
 				freqStat.push(b);
 			}
 		}
-		//Huffman compression
-		return doCompress();
 	}
 
 	private int quant(float f) {
@@ -72,9 +93,7 @@ public class Quantization {
 		StatisticsTreeEntry treeRoot = freqStat.buildTree();
 
 		//get Map Value -> Code
-		HTreeMap codesTree = new HTreeMap();
-		treeRoot.fetchCodes(codesTree);
-		
+		HTreeMap codesTree = treeRoot.fetchCodesMap();
 		System.out.println(codesTree);
 		
 		//process quantizied Matrix with H-Tree, ?and compress
@@ -110,5 +129,27 @@ public class Quantization {
 	private void cleanUp() {
 		freqStat.free();
 		System.gc();
+	}
+	
+	/* decompression*/
+	private StatisticsTreeEntry parseHTree(){
+		return StatisticsTreeEntry.readTree();
+	}
+
+	private Matrix decodeMatrix(int rowsCount, int columnsCount, List<Boolean> haffmanCodes, HTreeMap codesTree) throws Exception {
+		String code = "";
+		int [] values = new int [rowsCount*columnsCount];
+		int index=0, val;
+		for (Boolean b:haffmanCodes){
+			code+=(b?'1':'0');		
+			if ((val = codesTree.getValue(code))<0){
+				if (val == -2) throw new Exception("The bits consequence not found in Hafmman tree: \""+code+"\"");
+			} else {
+				values[index++]= val;
+				code="";
+			}
+		}
+		Matrix m = new Matrix(rowsCount, columnsCount);
+		return m;
 	}
 }

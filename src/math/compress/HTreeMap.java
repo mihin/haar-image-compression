@@ -40,6 +40,14 @@ public class HTreeMap {
 				return c.getCode();
 		return null;
 	}
+	public int getValue(String code){
+		for (HCode c:items)
+			if (c.getCode().startsWith(code)){
+				if (c.getCode().equals(code)) return c.getValue();
+				else return -1;
+			}
+		return -2;
+	}
 }
 
 class HCode{

@@ -63,7 +63,7 @@ public class Main {
 			return;
 		}
 		
-		final boolean logCoefsToFile = false;
+		final boolean logCoefsToFile = true;
 		
 		DWTCoefficients[] coefClassic, coefAdaptive; 
 		coefClassic =  decomposeImage(doReconstruct, logCoefsToFile, imageData, new HaarClassic(), level);
@@ -101,8 +101,21 @@ public class Main {
 		System.out.println();
 		
 		System.out.println("--== Quantization ==--");
-		Quantization mQuantization = new Quantization(32);
-		mQuantization.process(coefClassic[0]);  
+		DWTCoefficients decodedCoefs [] = new DWTCoefficients [3];
+		Quantization mQuantization = new Quantization(2*32);
+		decodedCoefs[0] = mQuantization.process(coefClassic[0]);  
+		decodedCoefs[1] = mQuantization.process(coefClassic[1]);  
+		decodedCoefs[2] = mQuantization.process(coefClassic[2]);
+		
+		DWT dwt =  new DWT(new HaarClassic());
+		String newFile = "Huffman.jpg";
+		try {
+			new File(newFile).createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		imageData.setFilename(newFile);
+		simpleReconstruct(dwt, imageData, decodedCoefs);
 	}
 	private DWTCoefficients[] decomposeImage(boolean doReconstruct, boolean doLogCoefs,
 			ImageObject imageData, Wavelet2DTransformation transform, int level){

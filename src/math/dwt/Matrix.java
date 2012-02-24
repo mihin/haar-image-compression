@@ -37,6 +37,15 @@ public class Matrix implements Serializable, Composable{
 				values[i][j] = input[i][j]; 
 				
 	}
+	public Matrix buildMatrix(int [] input){
+		final int rows = getRowsCount();
+		final int columns = getColumnsCount();
+		if (input.length != rows*columns) return null;
+		for (int i=0; i < rows; i++)
+			for (int j=0; j < columns; j++)
+				values[i][j] = input[i*columns+j];
+		return this;
+	}
 	
 	public float [][] get(){
 		return values;

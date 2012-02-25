@@ -8,7 +8,8 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import math.constants.FileNaming;
+
+import math.utils.FileNamesConst;
 
 public class ImageAdapter {
 //	public ImageAdapter(){}
@@ -40,7 +41,7 @@ public class ImageAdapter {
 		int width=0, height=0;
 		try {
 			for (String file:files){
-				br = new BufferedReader(new FileReader(FileNaming.resultsFolder+file));
+				br = new BufferedReader(new FileReader(FileNamesConst.resultsFolder+file));
 				line = br.readLine();
 				System.out.println("Reading file.. "+line);
 				color = line.split(" ")[2];
@@ -49,20 +50,20 @@ public class ImageAdapter {
 				
 				line = br.readLine();
 				splitted = line.split(" ");
-				if (FileNaming.propSize.equals(splitted[0]+" ")){
-					splitted = splitted[1].split(FileNaming.propSizesDelimeter);
+				if (FileNamesConst.propSize.equals(splitted[0]+" ")){
+					splitted = splitted[1].split(FileNamesConst.propSizesDelimeter);
 					width = Integer.parseInt(splitted[0]);
 					height = Integer.parseInt(splitted[1]);
 				} else {
-					System.err.println("Wrong file format("+file.toString()+"), cannot find \""+FileNaming.propSize+"\" property");
+					System.err.println("Wrong file format("+file.toString()+"), cannot find \""+FileNamesConst.propSize+"\" property");
 					return null;
 				}	
 				currentPixels = new float [height][width];
-				if (FileNaming.cRed.equals(color)){
+				if (FileNamesConst.cRed.equals(color)){
 					pixelsR = currentPixels;
-				} else if (FileNaming.cGreen.equals(color)){
+				} else if (FileNamesConst.cGreen.equals(color)){
 					pixelsG = currentPixels;
-				} else if (FileNaming.cBlue.equals(color)){
+				} else if (FileNamesConst.cBlue.equals(color)){
 					pixelsB = currentPixels;
 				} else {
 					System.err.println("Wrong file format, color read = "+color);

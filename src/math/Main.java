@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 
 import math.compress.Quantization;
-import math.constants.FileNaming;
 import math.dwt.DWT;
 import math.dwt.DWTCoefficients;
 import math.dwt.Matrix;
@@ -16,6 +15,7 @@ import math.dwt.wavelets.HaarAdaptive;
 import math.dwt.wavelets.HaarClassic;
 import math.image.ImageAdapter;
 import math.image.ImageObject;
+import math.utils.FileNamesConst;
 
 public class Main {
 	File logFile = null;
@@ -183,10 +183,10 @@ public class Main {
 	
 	private void loadDecompCoefs(String transfName){
 		ImageObject[] _4CoefMatrix = new ImageObject[] {
-			loadDecompCoefs(transfName, FileNaming.mAverageCoef, false),
-			loadDecompCoefs(transfName, FileNaming.mHorizCoef, false),
-			loadDecompCoefs(transfName, FileNaming.mVerticalCoef, false),
-			loadDecompCoefs(transfName, FileNaming.mDialonalCoef, false),
+			loadDecompCoefs(transfName, FileNamesConst.mAverageCoef, false),
+			loadDecompCoefs(transfName, FileNamesConst.mHorizCoef, false),
+			loadDecompCoefs(transfName, FileNamesConst.mVerticalCoef, false),
+			loadDecompCoefs(transfName, FileNamesConst.mDialonalCoef, false),
 		};
 		
 		//gather 4 pictures pretty
@@ -195,9 +195,9 @@ public class Main {
 	private ImageObject loadDecompCoefs(String transfName, String matrixName, boolean saveToSeparateFile){
 		ImageAdapter ia = new ImageAdapter();
 		ImageObject imageData = ia.readImageCoefficients(new String[]{
-				FileNaming.cRed  +transfName+matrixName+FileNaming.ext,
-				FileNaming.cGreen+transfName+matrixName+FileNaming.ext,
-				FileNaming.cBlue +transfName+matrixName+FileNaming.ext
+				FileNamesConst.cRed  +transfName+matrixName+FileNamesConst.ext,
+				FileNamesConst.cGreen+transfName+matrixName+FileNamesConst.ext,
+				FileNamesConst.cBlue +transfName+matrixName+FileNamesConst.ext
 				});
 		if (imageData == null){
 			System.err.println("Reading image from coefs unsuccessful ("+transfName+", "+matrixName+")");

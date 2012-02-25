@@ -6,12 +6,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.IllegalFormatFlagsException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import math.compress.utils.BitOutputStream;
 import math.dwt.DWTCoefficients;
 import math.dwt.Matrix;
+import math.utils.Log;
 
 public class Quantization {
+	
 	private final int SHIFT = 256; 
 	private final int MAX_VAL = 2*SHIFT; 
 	
@@ -22,30 +26,29 @@ public class Quantization {
 		DIVIDER = MAX_VAL/LEVELS;
 	}
 	
-	private int [] quantizied;
+//	private int [] quantizied;
 	public DWTCoefficients process(DWTCoefficients image){
 		Matrix ma, mv, mh, md;
 		mv = matrixCompressCycle(image.getMv());
 		mh = matrixCompressCycle(image.getMh());
 		md = matrixCompressCycle(image.getMd());
 		
-		quantizied = null;
+//		quantizied = null;
 		System.gc();
 		System.gc();
 		return new DWTCoefficients(image.getMd(), mv, mh, md, null, false);
 	}
 	
 	private Matrix matrixCompressCycle(Matrix m){
-		freqStat = new FreqStatistics(LEVELS);
-		quantizied = new int [m.getColumnsCount()*m.getRowsCount()];
+		FreqStatistics freqStat = new FreqStatistics(LEVELS);
 
-		//quatization
-		processMatrixQuatization(m);
+		//quatization & statistics gathering
+		int [] quantizied = processMatrixQuatization(m,freqStat);
 		
 		//Huffman compression
-		List<Boolean> haffmanCodes = doCompress();
+		List<Boolean> haffmanCodes = doCompress(freqStat,quantizied);
 
-		//print Haffman code
+		// save/print Haffman code
 		try {
 			BitOutputStream bos = new BitOutputStream(new FileOutputStream("MVBits.txt"));
 			StringBuffer sb = new StringBuffer();
@@ -53,7 +56,7 @@ public class Quantization {
 				sb.append(b?'1':'0');
 				bos.writeBit(b?1:0);
 			}
-			System.out.println("Haffman encoded values:\n"+sb.toString());			
+			Log.get().log(Level.FINEST, "Haffman encoded values:\n"+sb.toString());			
 			bos.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -61,14 +64,13 @@ public class Quantization {
 			e.printStackTrace();
 		}
 		
-		
-		System.out.println("\nDecompression. restoring Haffman tree..");
+		Log.get().log(Level.CONFIG,"\nDecompression.");
 		//read HTree
 		StatisticsTreeEntry mHTree = parseHTree();
 
 		//get Map Value -> Code
 		HTreeMap codesTree = mHTree.fetchCodesMap();
-		System.out.println(codesTree);
+		Log.get().log(Level.FINER, "Loaded codes tree:\n"+codesTree.toString());
 		
 		//decode Matrix from Haffman codes
 		Matrix decodedMatrix = null;
@@ -76,18 +78,20 @@ public class Quantization {
 			decodedMatrix = decodeMatrix(m.getRowsCount(), m.getColumnsCount(), haffmanCodes, codesTree);
 			String filename = "redMVHDecoded.txt";
 			decodedMatrix.saveToFile(filename, "Huffman decoded");
-			System.out.println("Decoded matrix saved to file "+filename);
+			Log.get().log(Level.FINE, "Decoded matrix saved to file "+filename);
 		} catch (IllegalFormatFlagsException e) {
 			e.printStackTrace();
 		}
 
 		
-		
+		freqStat.free();
 		haffmanCodes.clear();
+		quantizied = null;
 		return decodedMatrix;
 	}
 
-	private void processMatrixQuatization(Matrix m) {
+	private int [] processMatrixQuatization(Matrix m, FreqStatistics freqStat) {
+		int [] quantizied = new int [m.getColumnsCount()*m.getRowsCount()];
 		final int rows = m.getRowsCount();
 		int b=0;
 		
@@ -99,6 +103,7 @@ public class Quantization {
 				freqStat.push(b);
 			}
 		}
+		return quantizied;
 	}
 
 	private int quant(float f) {
@@ -114,21 +119,21 @@ public class Quantization {
 	
 	/* Huffman compression */
 //	private int [] freqences;
-	private FreqStatistics freqStat;
-	private List<Boolean> doCompress(){
+//	private FreqStatistics freqStat;
+	private List<Boolean> doCompress(FreqStatistics freqStat,int [] quantizied){
 		//sort by freqs
 		freqStat.sort();
-		System.out.println("doCompress, sorted, frequences:\n"+freqStat.toString());
+		Log.get().log(Level.FINEST, "doCompress, sorted, frequences:\n"+freqStat.toString());
 		
 		//build tree
 		StatisticsTreeEntry treeRoot = freqStat.buildTree();
 
 		//get Map Value -> Code
 		HTreeMap codesTree = treeRoot.fetchCodesMap();
-		System.out.println(codesTree);
+		Log.get().log(Level.FINER, codesTree.toString());
 		
 		//process quantizied Matrix with H-Tree, ?and compress
-		List<Boolean> res = processCompression(codesTree);
+		List<Boolean> res = processCompression(codesTree,quantizied);
 //		System.out.println("Decoded by Haffman, bytes ");
 		
 		//TODO Convert HTree to output format
@@ -136,33 +141,26 @@ public class Quantization {
 		
 		//TODO assemble formated HTree and compressed HCode
 		
-		//clean - everything except assembled Tree and compressed data
-		cleanUp();		
-		
 		return res;
 	}
-	private List<Boolean> processCompression(HTreeMap codes){
+	private List<Boolean> processCompression(HTreeMap codes,int [] quantizied){
 		assert quantizied!=null;
 //		StringBuffer sb = new StringBuffer();
 //		boolean[] bits = null;
-		List<Boolean> bits = null;
+//		List<Boolean> bits = null;
 		List<Boolean> haffmanCode = new ArrayList<Boolean>();
 		for (int i=0; i<quantizied.length; i++){
-			bits = codes.getBits(quantizied[i]);
-			haffmanCode.addAll(bits);
-			bits.clear();
+//			bits = codes.getBits(quantizied[i]);
+//			haffmanCode.addAll(bits);
+//			bits.clear();
+			haffmanCode.addAll(codes.getBits(quantizied[i]));
 		}
 		// TODO ?compress haffmanCode 
 		
 		return haffmanCode;
 	}
 
-	private void cleanUp() {
-		freqStat.free();
-		System.gc();
-	}
-	
-	/* decompression*/
+	/* --== decompression ==--  */
 	private StatisticsTreeEntry parseHTree(){
 		return StatisticsTreeEntry.readTree();
 	}
@@ -176,12 +174,12 @@ public class Quantization {
 			if ((val = codesTree.getValue(code))<0){
 				if (val == -2) throw new IllegalFormatFlagsException("The bits consequence not found in Hafmman tree: \""+code+"\"");
 			} else {
-				values[index++]= unQuant(val);
+				values[index++]= unQuant(val);	//reverse quantization
 				code="";
 			}
 		}
-		
-		Matrix m = new Matrix(rowsCount, columnsCount);
-		return m.buildMatrix(values);
+		final Matrix m = new Matrix(rowsCount, columnsCount).buildMatrix(values);
+		values = null;
+		return m;
 	}
 }

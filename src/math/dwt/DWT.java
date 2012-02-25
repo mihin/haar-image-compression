@@ -3,8 +3,8 @@ package math.dwt;
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 
-import math.constants.FileNaming;
 import math.dwt.wavelets.HaarAdaptive;
+import math.utils.FileNamesConst;
 
 public class DWT {
 	private Wavelet2DTransformation tranformation;
@@ -57,12 +57,12 @@ public class DWT {
 				"\t\tV,H,D Sum: "+myFormatter.format(mDWTCoefs.getNormVHDSum())
 				);
 		if (fileSaveName!=null && fileSaveName != ""){
-			ma.saveToFile(fileSaveName+tranformation.getCaption()+FileNaming.mAverageCoef+FileNaming.ext,	"Average coefs "+fileSaveName);
-			mh.saveToFile(fileSaveName+tranformation.getCaption()+FileNaming.mHorizCoef+FileNaming.ext, 	"Horiz coefs "+fileSaveName);
-			mv.saveToFile(fileSaveName+tranformation.getCaption()+FileNaming.mVerticalCoef+FileNaming.ext, 	"Vert coefs "+fileSaveName);
-			md.saveToFile(fileSaveName+tranformation.getCaption()+FileNaming.mDialonalCoef+FileNaming.ext, 	"Diag coefs "+fileSaveName);
+			ma.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mAverageCoef+FileNamesConst.ext,	"Average coefs "+fileSaveName);
+			mh.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mHorizCoef+FileNamesConst.ext, 	"Horiz coefs "+fileSaveName);
+			mv.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mVerticalCoef+FileNamesConst.ext, 	"Vert coefs "+fileSaveName);
+			md.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mDialonalCoef+FileNamesConst.ext, 	"Diag coefs "+fileSaveName);
 			if (adoptiveMap!=null)
-				adoptiveMap.saveToFile(fileSaveName+tranformation.getCaption()+FileNaming.mTransfMap+FileNaming.ext, "Transformation mapping "+fileSaveName);
+				adoptiveMap.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mTransfMap+FileNamesConst.ext, "Transformation mapping "+fileSaveName);
 		}
 		return mDWTCoefs;
 	}

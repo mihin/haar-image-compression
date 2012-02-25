@@ -1,6 +1,6 @@
-package math.constants;
+package math.utils;
 
-public interface FileNaming {
+public interface FileNamesConst {
 	public final String ext = ".txt";
 	public final String resultsFolder = "results/";
 	

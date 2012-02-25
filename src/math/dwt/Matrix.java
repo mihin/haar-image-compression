@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
 
-import math.constants.FileNaming;
+import math.utils.FileNamesConst;
 
 public class Matrix implements Serializable, Composable{
 	private static final long serialVersionUID = -6115000503774456837L;
@@ -44,6 +44,7 @@ public class Matrix implements Serializable, Composable{
 		for (int i=0; i < rows; i++)
 			for (int j=0; j < columns; j++)
 				values[i][j] = input[i*columns+j];
+		
 		return this;
 	}
 	
@@ -103,7 +104,7 @@ public class Matrix implements Serializable, Composable{
 		try {
 //			File f = new File(FileNaming.resultsFolder);
 //			f.mkdirs();
-			File f = new File(FileNaming.resultsFolder+path);
+			File f = new File(FileNamesConst.resultsFolder+path);
 			
 			bw = new BufferedWriter(new FileWriter(f));
 //			os = new BufferedOutputStream(new FileOutputStream(f));
@@ -113,7 +114,7 @@ public class Matrix implements Serializable, Composable{
 			}
 //			os.write(toString().getBytes());
 //			os.flush();
-			bw.write(FileNaming.propSize+getColumnsCount()+FileNaming.propSizesDelimeter+getRowsCount()+"\n");
+			bw.write(FileNamesConst.propSize+getColumnsCount()+FileNamesConst.propSizesDelimeter+getRowsCount()+"\n");
 			bw.write(toString());
 			bw.flush();
 //			System.out.println("File "+path+"("+comments+") was read.");

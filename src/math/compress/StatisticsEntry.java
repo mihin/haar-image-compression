@@ -6,9 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Level;
 
 import math.compress.utils.BitInputStream;
 import math.compress.utils.BitOutputStream;
+import math.utils.Log;
 
 public class StatisticsEntry implements Comparable<StatisticsEntry>{
 	private int value = -1;
@@ -91,28 +93,23 @@ class StatisticsTreeEntry extends StatisticsEntry {
 		if (rightLeaf!=null) rightLeaf.addPrefix(c);
 	}
 	
-//	public void printCodes(){
-//		printLeafsCode(this);
-//	}
-	
- 
 //	private HTreeMap mHTreeMap;
 	public HTreeMap fetchCodesMap(){
 //		mHTreeMap = map;
 		HTreeMap map = new HTreeMap(); 
-		printLeafsCode(this, map);
+		assembleCodesTree(this, map);
 		return map;
 	}
 
 	// TODO benchmark speed with HTreeMap in params and as a class property
-	private void printLeafsCode(StatisticsTreeEntry node, HTreeMap mHTreeMap){
+	private void assembleCodesTree(StatisticsTreeEntry node, HTreeMap mHTreeMap){
 		if (node==null) return;
 		if (node.leftLeaf==null && node.rightLeaf==null){ //this is a leaf
 			mHTreeMap.add(node.getValue(), node.code);
 //			System.out.print(node);
 		} else { //this a node
-			printLeafsCode(node.rightLeaf, mHTreeMap);
-			printLeafsCode(node.leftLeaf, mHTreeMap);
+			assembleCodesTree(node.rightLeaf, mHTreeMap);
+			assembleCodesTree(node.leftLeaf, mHTreeMap);
 		}
 	}
 	
@@ -125,7 +122,7 @@ class StatisticsTreeEntry extends StatisticsEntry {
 			bitsOutput = new StringBuffer();
 			toBits(this, bos);
 			bos.close();
-			System.out.println("Tree in bits:\n"+bitsOutput.toString());
+			Log.get().log(Level.FINER,"Tree in bits:\n"+bitsOutput.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

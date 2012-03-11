@@ -5,6 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.logging.Formatter;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 
 import math.compress.Quantization;
 import math.dwt.DWT;
@@ -16,11 +21,17 @@ import math.dwt.wavelets.HaarClassic;
 import math.image.ImageAdapter;
 import math.image.ImageObject;
 import math.utils.FileNamesConst;
+import math.utils.Log;
 
 public class Main {
 	File logFile = null;
 
 	public static void main(String [] in){
+//		StreamHandler sh = new StreamHandler(System.out, new SimpleFormatter()); 
+//		Log.get().addHandler(sh);
+//		Log.get().setLevel(Level.FINEST);
+		Log.get().log(Level.CONFIG, "Logger created");
+		
 		Main m = new Main();
 //		m.logFile = new File("log.txt");
 		

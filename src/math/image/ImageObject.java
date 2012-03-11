@@ -4,10 +4,12 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 
 import math.utils.FileNamesConst;
+import math.utils.Log;
 
 public class ImageObject {
 	private int [] rgbs;
@@ -70,8 +72,8 @@ public class ImageObject {
 							Math.abs(pixelsB[i][j])
 							);
 				} catch (Exception e) {
-					System.err.println(e.getMessage()+
-							"\nК="+pixelsR[i][j]+", G="+pixelsG[i][j]+", B="+pixelsB[i][j]);
+					Log.get().log(Level.WARNING, e.getMessage()+ "  R="+pixelsR[i][j]+", G="+pixelsG[i][j]+", B="+pixelsB[i][j]);
+					
 					color = new Color(
 							Math.min(255,Math.abs(pixelsR[i][j])), 
 							Math.min(255,Math.abs(pixelsG[i][j])), 

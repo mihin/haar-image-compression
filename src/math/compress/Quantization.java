@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.IllegalFormatFlagsException;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import math.compress.utils.BitOutputStream;
 import math.dwt.DWTCoefficients;
@@ -36,7 +35,7 @@ public class Quantization {
 //		quantizied = null;
 		System.gc();
 		System.gc();
-		return new DWTCoefficients(image.getMd(), mv, mh, md, null, false);
+		return new DWTCoefficients(image.getMa(), mv, mh, md, null, false);
 	}
 	
 	private Matrix matrixCompressCycle(Matrix m){

@@ -2,6 +2,9 @@ package math.compress;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Level;
+
+import math.utils.Log;
 
 public class FreqStatistics {
 	private ArrayList<StatisticsEntry> items;
@@ -27,13 +30,12 @@ public class FreqStatistics {
 			if (entry!=null) items.add(entry);
 		}
 		
-		System.out.println("FreqStatistics, sort(); items size = "+items.size());
 		//clean null items
 //		items.removeAll(Collections.singletonList(null));
 //		System.out.println("FreqStatistics, sort(); remove null, items size = "+items.size());
 
 		Collections.sort(items);
-		System.out.println("FreqStatistics, sort(); items size = "+items.size());
+		Log.get().log(Level.FINER, "FreqStatistics, sort(); Sorted items size = "+items.size());
 	}
 	
 	public StatisticsTreeEntry buildTree(){

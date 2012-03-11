@@ -63,7 +63,7 @@ public class Quantization {
 			e.printStackTrace();
 		}
 		
-		Log.get().log(Level.CONFIG,"\nDecompression.");
+		Log.get().log(Level.FINER,"\nDecompression.");
 		//read HTree
 		StatisticsTreeEntry mHTree = parseHTree();
 
@@ -77,7 +77,7 @@ public class Quantization {
 			decodedMatrix = decodeMatrix(m.getRowsCount(), m.getColumnsCount(), haffmanCodes, codesTree);
 			String filename = "redMVHDecoded.txt";
 			decodedMatrix.saveToFile(filename, "Huffman decoded");
-			Log.get().log(Level.FINE, "Decoded matrix saved to file "+filename);
+			Log.get().log(Level.FINER, "Decoded matrix saved to file "+filename);
 		} catch (IllegalFormatFlagsException e) {
 			e.printStackTrace();
 		}

@@ -27,10 +27,11 @@ public class Main {
 	File logFile = null;
 
 	public static void main(String [] in){
+		new Log();
 //		StreamHandler sh = new StreamHandler(System.out, new SimpleFormatter()); 
 //		Log.get().addHandler(sh);
-//		Log.get().setLevel(Level.FINEST);
-		Log.get().log(Level.CONFIG, "Logger created");
+		Log.get().setLevel(Level.FINE);
+		Log.get().log(Level.FINEST, "Logger created");
 		
 		Main m = new Main();
 //		m.logFile = new File("log.txt");
@@ -68,7 +69,8 @@ public class Main {
 		ImageObject imageData = null;
 		try {
 			imageData = ia.readImageFile(filename);
-			System.out.println("Image from file "+filename+" was read(w="+imageData.width+", h="+imageData.height+").");
+			Log.get().log(Level.FINE, "Image from file "+filename+" was read(w="+imageData.width+", h="+imageData.height+").");
+//			System.out.println("Image from file "+filename+" was read(w="+imageData.width+", h="+imageData.height+").");
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -85,7 +87,10 @@ public class Main {
 		String [] colors = new String [] {"Red", "Green", "Blue"};
 		
 		if (logFile!=null) {
-			System.out.println("Norm sum decay comparison:");
+			StringBuffer sb = new StringBuffer();
+			sb.append("Norm sum decay comparison:");
+			
+//			System.out.println("Norm sum decay comparison:");
 			int j = 0;
 			String title = "\n"+filename.intern()+"\n";
 			String logs = null;
@@ -94,7 +99,8 @@ public class Main {
 						color+":\t" + myFormatter.format(coefClassic[j] .getNormVHDSum())
 						+ " -> "   + myFormatter.format(coefAdaptive[j].getNormVHDSum())
 						+ "\t("+(coefAdaptive[j].getNormVHDSum()*10000/coefClassic[j] .getNormVHDSum()/100f)+"%)";
-				System.out.println(logs);
+//				System.out.println(logs);
+				sb.append(logs);
 				
 				try {
 					FileOutputStream fos = new FileOutputStream(logFile, true);
@@ -108,10 +114,10 @@ public class Main {
 				title = "";
 				j++;
 			}
+			Log.get().log(Level.FINEST, sb.toString());
 		}
-		System.out.println();
 		
-		System.out.println("--== Quantization ==--");
+		Log.get().log(Level.INFO, "\n--== Quantization ==--");
 		DWTCoefficients decodedCoefs [] = new DWTCoefficients [3];
 		Quantization mQuantization = new Quantization(2*32);
 		decodedCoefs[0] = mQuantization.process(coefClassic[0]);  
@@ -133,7 +139,8 @@ public class Main {
 		//start Haar decomposition
 		DWT dwt =  new DWT(transform);
 		DWTCoefficients coefR, coefG, coefB;
-		System.out.println(dwt.getTranformation().getCaption()+": \nHor\t\tVer\t\tDiag\t\t\tAverage");
+		Log.get().log(Level.FINE, "\n"+dwt.getTranformation().getCaption()+": \n\tHor\t\tVer\t\tDiag\t\t\tAverage");
+//		System.out.println(dwt.getTranformation().getCaption()+": \n\tHor\t\tVer\t\tDiag\t\t\tAverage");
 		if (doLogCoefs){
 			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red"	, level);
 			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green"	, level);
@@ -143,7 +150,7 @@ public class Main {
 			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, ""	, level);
 			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, ""	, level);
 		}
-		System.out.println();
+//		System.out.println();
 
 //		Matrix m = new Matrix(new float [][]{{1,2,3,4}, {4,6,1,2}, {1,2,3,4}, {5,6,7,2}}); 
 //		DWTCoefficients coef = dwt.decompose( m , true, "testMatr");
@@ -162,7 +169,9 @@ public class Main {
 	
 //	private int reconsCount = 1;
 	private void simpleReconstruct(DWT dwt, ImageObject imageData, DWTCoefficients... coef){
-		System.out.println("Reconstruction attempt.. ("+imageData.getFilename()+")");
+		Log.get().log(Level.FINE, "\nReconstruction attempt.. ("+imageData.getFilename()+")" );
+//		System.out.println("Reconstruction attempt.. ("+imageData.getFilename()+")");
+		
 		Matrix reconstR = dwt.reconstruct(coef[0]);
 		Matrix reconstG = dwt.reconstruct(coef[1]);
 		Matrix reconstB = dwt.reconstruct(coef[2]);
@@ -177,7 +186,7 @@ public class Main {
 				reconstR.getColumnsCount(), reconstR.getRowsCount()
 				);
 		reconstImage.saveToImageFile(imageData.getFilename()+"rec"+dwt.getTranformation().getCaption(), "jpg");
-		System.out.println();
+//		System.out.println();
 	}
 	
 	/**

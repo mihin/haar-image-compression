@@ -45,7 +45,7 @@ public class ImageObject {
 	}
 	
 	public ImageObject(float [][] _pixelsR, float [][] _pixelsG, float [][] _pixelsB, int _width, int _height) {
-		System.out.println("Creating ImageObject with color arrays");
+		Log.get().log(Level.FINEST, "Creating ImageObject with color arrays");
 		width = _width;
 		height = _height;
 		
@@ -58,6 +58,8 @@ public class ImageObject {
 		pixelsB = new int [height][width];
 		rgbs = new int [height*width];
 //		rgbs = new int [height*width*3];
+		
+		boolean wereTroubles = false;
 		
 		for (int i = 0; i < height; i++){
 			for (int j = 0; j < width; j++){
@@ -72,7 +74,8 @@ public class ImageObject {
 							Math.abs(pixelsB[i][j])
 							);
 				} catch (Exception e) {
-					Log.get().log(Level.WARNING, e.getMessage()+ "  R="+pixelsR[i][j]+", G="+pixelsG[i][j]+", B="+pixelsB[i][j]);
+					Log.get().log(Level.FINER, e.getMessage() + "  R="+pixelsR[i][j]+", G="+pixelsG[i][j]+", B="+pixelsB[i][j]);
+					wereTroubles = true;
 					
 					color = new Color(
 							Math.min(255,Math.abs(pixelsR[i][j])), 
@@ -109,7 +112,7 @@ public class ImageObject {
         File imageFile = new File(FileNamesConst.resultsFolder+filename+"."+ext);
         try {
 			ImageIO.write(image, ext, imageFile);
-			System.out.println("Image saved to file " + filename+"."+ext);
+			Log.get().log(Level.FINER, "Image saved to file " + filename+"."+ext);
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();

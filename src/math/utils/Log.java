@@ -1,14 +1,11 @@
 package math.utils;
 
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
-import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 
 public class Log {
-	@SuppressWarnings("deprecation")
 //	StreamHandler sh = new StreamHandler(System.out, null);
 //	private static Logger mLogger = Logger.getLogger("dwt_logger");
 	private static Logger mLogger = null;
@@ -36,14 +33,32 @@ public class Log {
 //	    //set the console handler to fine:
 //	    consoleHandler.setLevel(java.util.logging.Level.FINEST);
 //	}
-	private Log(){
+	public Log(){
 		mLogger = java.util.logging.Logger.getLogger("dwt_logger");
-		ConsoleHandler consoleHandler = new ConsoleHandler();
-        mLogger.addHandler(consoleHandler);
-        consoleHandler.setLevel(java.util.logging.Level.ALL);
+//		ConsoleHandler consoleHandler = new ConsoleHandler();
+//        mLogger.addHandler(consoleHandler);
+//        consoleHandler.setLevel(java.util.logging.Level.ALL);
+//		Formatter mFormatter = new SimpleFormatter();
+		Formatter mFormatter = new Formatter() {
+			public String format(LogRecord record) {
+				StringBuffer sb = new StringBuffer();
+				sb.append(record.getMessage());
+				sb.append(" (");
+				sb.append(record.getLevel());
+				sb.append(", ");
+				sb.append(record.getSourceClassName());
+				sb.append(")\n");
+				return sb.toString();
+			}
+		};
+		StreamHandler consoleHandler = new StreamHandler(System.out, mFormatter);
+      mLogger.addHandler(consoleHandler);
+      mLogger.setUseParentHandlers(false);
+      consoleHandler.setLevel(java.util.logging.Level.ALL);
+
 	}
 	public static Logger get(){
-		if (mLogger == null) new Log();
+//		if (mLogger == null) new Log();
 		return mLogger;
 	}
 }

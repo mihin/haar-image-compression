@@ -2,9 +2,11 @@ package math.dwt;
 
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
+import java.util.logging.Level;
 
 import math.dwt.wavelets.HaarAdaptive;
 import math.utils.FileNamesConst;
+import math.utils.Log;
 
 public class DWT {
 	private Wavelet2DTransformation tranformation;
@@ -49,7 +51,8 @@ public class DWT {
 
 		//output decomposition coefficients
 		DecimalFormat myFormatter = new DecimalFormat("#,000");
-		System.out.println(fileSaveName+
+		Log.get().log(Level.FINE, 
+				fileSaveName+" "+
 				(mDWTCoefs.getNormMh())+
 				"\t"+(mDWTCoefs.getNormMv())+
 				"\t"+(mDWTCoefs.getNormMd())+

@@ -44,9 +44,9 @@ public class Log {
 				StringBuffer sb = new StringBuffer();
 				sb.append(record.getMessage());
 				sb.append(" (");
-				sb.append(record.getLevel());
-				sb.append(", ");
 				sb.append(record.getSourceClassName());
+				sb.append(", ");
+				sb.append(record.getLevel());
 				sb.append(")\n");
 				return sb.toString();
 			}

@@ -91,14 +91,14 @@ public class Quantization {
 
 	private int [] processMatrixQuatization(Matrix m, FreqStatistics freqStat) {
 		int [] quantizied = new int [m.getColumnsCount()*m.getRowsCount()];
-		final int rows = m.getRowsCount();
+		final int columns = m.getColumnsCount();
 		int b=0;
 		
 		//Quantization and calculating frequences
-		for (int i=0;i<rows;i++){
-			for (int j=0;j<m.getColumnsCount();j++){
+		for (int i=0;i<m.getRowsCount();i++){
+			for (int j=0;j<columns;j++){
 				b = quant(m.get()[i][j]);
-				quantizied[i*rows + j] = b;
+				quantizied[i*columns + j] = b;
 				freqStat.push(b);
 			}
 		}
@@ -109,7 +109,8 @@ public class Quantization {
 		f = f + SHIFT;
 		if (f < 0) f = 0;						//f = Min(); f = Max()
 		else if (f >= MAX_VAL) f = MAX_VAL-1;
-		return Math.round(f / DIVIDER);
+//		return Math.round(f / DIVIDER);
+		return (int)(f / DIVIDER);
 	}
 	private int unQuant(int q) {
 		return q*DIVIDER-SHIFT;

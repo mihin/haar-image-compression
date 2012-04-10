@@ -1,15 +1,8 @@
 package math;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
-import java.util.logging.StreamHandler;
 
 import math.compress.Quantization;
 import math.dwt.DWT;
@@ -24,47 +17,59 @@ import math.utils.FileNamesConst;
 import math.utils.Log;
 
 public class Main {
-	File logFile = null;
+//	File logFile = null;
 
+	private int LEVEL = 3;
+	private boolean DO_RECONSTRUCT = true;
+	private Main(int level, boolean toReconstruct){
+		LEVEL = level;
+		DO_RECONSTRUCT = toReconstruct;
+	}
 	public static void main(String [] in){
 		new Log();
 //		StreamHandler sh = new StreamHandler(System.out, new SimpleFormatter()); 
 //		Log.get().addHandler(sh);
-		Log.get().setLevel(Level.FINE);
-		Log.get().log(Level.FINEST, "Logger created");
+		int level = 3;
+		boolean toRecostr = true;
+		Level logLevel = Level.FINEST;
+		Log.get().setLevel(logLevel);
+		Main m = new Main(level, toRecostr);
 		
-		Main m = new Main();
+		Log.get().log(Level.CONFIG, "Launch. Decomposition depth "+level+
+				", recostruction = "+toRecostr+". Logging level is "+logLevel.getName());
+		
 //		m.logFile = new File("log.txt");
 		
 		
-		final boolean performReconstruction = false;
-		final int level = 1;
-		m.decomposeImage(performReconstruction, level);
+		m.performDecomposition();
 	
 //		m.loadDecompCoefs();
 		
 //		m.reconstructImage();
 	}
 	
-	private void decomposeImage(boolean doReconstruct, int level){
+	private void performDecomposition(){
 		final String FILENAME = "image";
 		final String EXTENTION = ".jpg";
 		final String PICFOLDER = "pictures/";
 		
 		int fileLimit = 1;
 		
-		int inFileCount = 0;
-		while ( fileLimit-->-1 && 
-				new File(PICFOLDER+FILENAME+(++inFileCount)+EXTENTION).exists()){}
-		
-		String filename = null;
-		for (int i = 1; i < inFileCount; i++){
-			filename = PICFOLDER+FILENAME+i+EXTENTION;
-			decomposeImage(doReconstruct, filename, level);
-		}
-//		decomposeImage(doReconstruct, "image4"+EXTENTION);
+//		int inFileCount = 0;
+//		while ( fileLimit-->-1 && 
+//				new File(PICFOLDER+FILENAME+(++inFileCount)+EXTENTION).exists()){}
+//		
+//		String filename = null;
+//		for (int i = 1; i < inFileCount; i++){
+//			filename = PICFOLDER+FILENAME+i+EXTENTION;
+//			decomposeImage(filename);
+//		}
+//		
+//		if (DO_RECONSTRUCT)
+//			new File(FileNamesConst.resultsFolder+PICFOLDER).mkdir();
+		decomposeImage(PICFOLDER+"image4"+EXTENTION);
 	}
-	private void decomposeImage(boolean doReconstruct, String filename, int level){
+	private void decomposeImage(String filename){
 		ImageAdapter ia = new ImageAdapter();
 		ImageObject imageData = null;
 		try {
@@ -79,10 +84,11 @@ public class Main {
 		final boolean logCoefsToFile = true;
 		
 		DWTCoefficients[] coefClassic, coefAdaptive; 
-		coefClassic =  decomposeImage(doReconstruct, logCoefsToFile, imageData, new HaarClassic(), level);
-		coefAdaptive = decomposeImage(doReconstruct, logCoefsToFile, imageData, new HaarAdaptive(), level);
+		coefClassic =  decomposeImage(logCoefsToFile, imageData, new HaarClassic());
+//		coefAdaptive = decomposeImage(doReconstruct, logCoefsToFile, imageData, new HaarAdaptive(), level);
 		
 		//comparison output
+		/*
 		DecimalFormat myFormatter = new DecimalFormat("#,000");
 		String [] colors = new String [] {"Red", "Green", "Blue"};
 		
@@ -116,6 +122,7 @@ public class Main {
 			}
 			Log.get().log(Level.FINEST, sb.toString());
 		}
+		*/
 		
 		Log.get().log(Level.INFO, "\n--== Quantization ==--");
 		DWTCoefficients decodedCoefs [] = new DWTCoefficients [3];
@@ -134,21 +141,20 @@ public class Main {
 		imageData.setFilename(newFile);
 		simpleReconstruct(dwt, imageData, decodedCoefs);
 	}
-	private DWTCoefficients[] decomposeImage(boolean doReconstruct, boolean doLogCoefs,
-			ImageObject imageData, Wavelet2DTransformation transform, int level){
+	private DWTCoefficients[] decomposeImage(boolean doLogCoefs, ImageObject imageData, Wavelet2DTransformation transform){
 		//start Haar decomposition
 		DWT dwt =  new DWT(transform);
 		DWTCoefficients coefR, coefG, coefB;
 		Log.get().log(Level.FINE, "\n"+dwt.getTranformation().getCaption()+": \n\tHor\t\tVer\t\tDiag\t\t\tAverage");
 //		System.out.println(dwt.getTranformation().getCaption()+": \n\tHor\t\tVer\t\tDiag\t\t\tAverage");
 		if (doLogCoefs){
-			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red"	, level);
-			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green"	, level);
-			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue"	, level);
+			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red"	, LEVEL);
+			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green"	, LEVEL);
+			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue"	, LEVEL);
 		} else {
-			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, ""	, level);
-			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, ""	, level);
-			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, ""	, level);
+			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, ""	, LEVEL);
+			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, ""	, LEVEL);
+			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, ""	, LEVEL);
 		}
 //		System.out.println();
 
@@ -160,7 +166,7 @@ public class Main {
 //		System.out.println();
 		
 		//reconstruction
-		if (doReconstruct){
+		if (DO_RECONSTRUCT){
 			simpleReconstruct(dwt, imageData, coefR, coefG, coefB);
 		}
 		
@@ -185,7 +191,7 @@ public class Main {
 				reconstR.get(), reconstG.get(), reconstB.get(), 
 				reconstR.getColumnsCount(), reconstR.getRowsCount()
 				);
-		reconstImage.saveToImageFile(imageData.getFilename()+"rec"+dwt.getTranformation().getCaption(), "jpg");
+		reconstImage.saveToImageFile(imageData.getFilename()+"Reconst"+dwt.getTranformation().getCaption(), "jpg");
 //		System.out.println();
 	}
 	

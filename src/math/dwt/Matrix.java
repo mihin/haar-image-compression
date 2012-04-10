@@ -6,8 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 
-import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
-
 import math.utils.FileNamesConst;
 
 public class Matrix implements Serializable, Composable{
@@ -50,6 +48,11 @@ public class Matrix implements Serializable, Composable{
 	
 	public float [][] get(){
 		return values;
+	}
+	public float get(int row, int column){
+		if (row >= getRowsCount()) row = getRowsCount()-1; 
+		if (column >= getColumnsCount()) column = getColumnsCount()-1;
+		return values[row][column];
 	}
 	public int getRowsCount(){
 		return values.length;
@@ -161,6 +164,14 @@ public class Matrix implements Serializable, Composable{
 	@Override
 	public Matrix compose() {
 		return this;
+	}
+	@Override
+	public Wavelet2DTransformation getTransform() {
+		return transform;
+	}
+	private Wavelet2DTransformation transform;
+	public void setTransform(Wavelet2DTransformation t){
+		transform = t;
 	}
 	
 	

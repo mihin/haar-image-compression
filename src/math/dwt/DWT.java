@@ -1,6 +1,5 @@
 package math.dwt;
 
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.logging.Level;
 
@@ -25,19 +24,22 @@ public class DWT {
 	 * @param levels 		decomposition level
 	 * @return
 	 */
-	public DWTCoefficients decompose(Matrix inputMatrix, boolean calculateMatrixNorms, String fileSaveName, int levels){
+	public DWTCoefficients decompose(Matrix inputMatrix, boolean calculateMatrixNorms, final String fileSaveName, int levels){
 //		 = new Matrix(input);
 //		System.out.println("Input matrix = " + inputMatrix);
 		
 		final int rows = inputMatrix.getRowsCount();
 		final int columns = inputMatrix.getColumnsCount();
-		final int coefRows = Math.round(rows/2);
-		final int coefColumns = Math.round(columns/2);
+//		final int coefRows = Math.round(rows/2);
+//		final int coefColumns = Math.round(columns/2);
+		final int coefRows = (rows+tranformation.getLength()-1)/tranformation.getLength();
+		final int coefColumns = (columns+tranformation.getLength()-1)/tranformation.getLength();
 		Matrix ma,mv,mh,md;
 		ma = new Matrix(coefRows,coefColumns);
 		mv = new Matrix(coefRows,coefColumns);
 		mh = new Matrix(coefRows,coefColumns);
 		md = new Matrix(coefRows,coefColumns);
+		ma.setTransform(tranformation); //init further composable coefss
 				
 //		System.out.println("DWT is processing "+fileSaveName+". Transform = "+tranformation.getCaption());
 		Matrix adoptiveMap = null;
@@ -52,7 +54,7 @@ public class DWT {
 		//output decomposition coefficients
 		DecimalFormat myFormatter = new DecimalFormat("#,000");
 		Log.get().log(Level.FINE, 
-				fileSaveName+" "+
+				fileSaveName+"L"+levels+" "+
 				(mDWTCoefs.getNormMh())+
 				"\t"+(mDWTCoefs.getNormMv())+
 				"\t"+(mDWTCoefs.getNormMd())+
@@ -60,10 +62,10 @@ public class DWT {
 				"\t\tV,H,D Sum: "+myFormatter.format(mDWTCoefs.getNormVHDSum())
 				);
 		if (fileSaveName!=null && fileSaveName != ""){
-			ma.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mAverageCoef+FileNamesConst.ext,	"Average coefs "+fileSaveName);
-			mh.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mHorizCoef+FileNamesConst.ext, 	"Horiz coefs "+fileSaveName);
-			mv.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mVerticalCoef+FileNamesConst.ext, 	"Vert coefs "+fileSaveName);
-			md.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mDialonalCoef+FileNamesConst.ext, 	"Diag coefs "+fileSaveName);
+			ma.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+levels+FileNamesConst.mAverageCoef+FileNamesConst.ext,	"Average coefs "+fileSaveName);
+			mh.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+levels+FileNamesConst.mHorizCoef+FileNamesConst.ext, 	"Horiz coefs "+fileSaveName);
+			mv.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+levels+FileNamesConst.mVerticalCoef+FileNamesConst.ext, 	"Vert coefs "+fileSaveName);
+			md.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+levels+FileNamesConst.mDialonalCoef+FileNamesConst.ext, 	"Diag coefs "+fileSaveName);
 			if (adoptiveMap!=null)
 				adoptiveMap.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mTransfMap+FileNamesConst.ext, "Transformation mapping "+fileSaveName);
 		}
@@ -86,28 +88,6 @@ public class DWT {
 		int rows = inputMatrix.getRowsCount();
 		int columns = inputMatrix.getColumnsCount();
 		
-		{
-			//make arrays dividible by 2
-			if (rows%2==1){
-				float buf = -1;
-				//TODO enlarge the array by 1
-				for (int i=0;i<columns;i++){
-					buf = inputMatrix.get()[rows-2][i];
-					inputMatrix.set(rows, i, buf);
-				}
-				rows++;
-			}
-			if (columns%2==1){
-				float buf = -1;
-				//TODO enlarge the array by 1
-				for (int i=0;i<rows;i++){
-					buf = inputMatrix.get()[i][columns-2];
-					inputMatrix.set(i, columns, buf);
-				}
-				columns++;	
-			}
-		}
-		
 		float[] dwtCoef = null;
 		if (map!=null){
 			for (int i = 0; i < rows; i+=2){
@@ -115,9 +95,12 @@ public class DWT {
 					dwtCoef = tranformation.perform(
 							new float[]{
 								inputMatrix.get()[i][j], 
-								inputMatrix.get()[i][j+1], 
-								inputMatrix.get()[i+1][j], 
-								inputMatrix.get()[i+1][j+1]
+//								inputMatrix.get()[i][j+1], 
+//								inputMatrix.get()[i+1][j], 
+//								inputMatrix.get()[i+1][j+1]
+								inputMatrix.get(i, j+1),
+								inputMatrix.get(i+1, j),
+								inputMatrix.get(i+1, j+1),
 								}
 							);
 					ma.set(i/2,j/2,dwtCoef[0]);
@@ -135,9 +118,12 @@ public class DWT {
 					dwtCoef = tranformation.perform(
 							new float[]{
 								inputMatrix.get()[i][j], 
-								inputMatrix.get()[i][j+1], 
-								inputMatrix.get()[i+1][j], 
-								inputMatrix.get()[i+1][j+1]
+//								inputMatrix.get()[i][j+1], 
+//								inputMatrix.get()[i+1][j], 
+//								inputMatrix.get()[i+1][j+1]
+								inputMatrix.get(i, j+1),
+								inputMatrix.get(i+1, j),
+								inputMatrix.get(i+1, j+1),
 								}
 							);
 					ma.set(i/2,j/2,dwtCoef[0]);
@@ -155,8 +141,12 @@ public class DWT {
 		mv = coefs.getMv().get();	
 		mh = coefs.getMh().get();	
 		md = coefs.getMd().get();
-		final int rows = coefs.getMa().getRowsCount(); 
-		final int columns = coefs.getMa().getColumnsCount();
+		final int rows = mv.length; 
+		final int columns = mv[0].length;
+		Log.get().log(Level.FINEST, "DWT.reconstruct(), " +
+				"ma ["+ma.length+", "+ma[0].length+"], " +
+				"mv ["+mv.length+", "+mv[0].length+"]."
+				);
 		Matrix reconstructedMatrix = new Matrix(rows*2, columns*2); 
 		
 		float [] dwtCoef = null;

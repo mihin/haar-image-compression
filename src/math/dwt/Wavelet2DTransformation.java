@@ -14,5 +14,6 @@ public interface Wavelet2DTransformation {
 	public float [] inverse(float [] coef);
 	
 	public String getCaption();
+	public int getLength();
 
 }

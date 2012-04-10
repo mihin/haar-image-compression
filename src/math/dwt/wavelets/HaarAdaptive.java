@@ -60,5 +60,9 @@ public class HaarAdaptive implements Wavelet2DTransformation {
 	private double getSquareSum(float [] q){
 		return q[1]*q[1]+q[2]*q[2]+q[3]*q[3];
 	}
+	@Override
+	public int getLength() {
+		return 2;
+	}
 
 }

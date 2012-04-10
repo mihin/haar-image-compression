@@ -10,6 +10,7 @@ public class DWTCoefficients implements Serializable, Composable{
 	 */
 	private Matrix mv, mh, md, transformationsMap;
 	private Composable ma;
+	private Composable composed = null;
 	/*
 	 * Norms of matrixes
 	 */
@@ -27,12 +28,14 @@ public class DWTCoefficients implements Serializable, Composable{
 		
 		this.transformationsMap = adoptiveMap;
 		
+		if (ma.getTransform() != null) transform = ma.getTransform(); //inheritance of the transformation type  
+		
 		if (calculateMatrixNorms){
 			nMv = mv.calculateNorm();
 			nMh = mh.calculateNorm();
 			nMd = md.calculateNorm();
 			
-			nMa = ma.compose().calculateNorm();
+//			nMa = ma.compose().calculateNorm();
 		}
 	}
 
@@ -77,8 +80,17 @@ public class DWTCoefficients implements Serializable, Composable{
 
 	@Override
 	public Matrix compose() {
-		// TODO return composition for this coefs
-		return null;
+		if (composed == null){
+			// TODO return composition for this coefs
+			composed = new DWT(getTransform()).reconstruct(this);
+		}
+		return composed.compose();
+	}
+
+	private Wavelet2DTransformation transform;
+	@Override
+	public Wavelet2DTransformation getTransform() {
+		return transform;
 	}
 	
 }

@@ -74,7 +74,8 @@ public class ImageObject {
 							Math.abs(pixelsB[i][j])
 							);
 				} catch (Exception e) {
-					Log.get().log(Level.FINER, e.getMessage() + "  R="+pixelsR[i][j]+", G="+pixelsG[i][j]+", B="+pixelsB[i][j]);
+					//Reconstructed coefs exceeded byte size
+//					Log.get().log(Level.FINER, e.getMessage() + "  R="+pixelsR[i][j]+", G="+pixelsG[i][j]+", B="+pixelsB[i][j]);
 					wereTroubles = true;
 					
 					color = new Color(
@@ -110,6 +111,7 @@ public class ImageObject {
 		image.setRGB(0, 0, width, height, rgbs, 0, width);
 
         File imageFile = new File(FileNamesConst.resultsFolder+filename+"."+ext);
+        imageFile.mkdirs();
         try {
 			ImageIO.write(image, ext, imageFile);
 			Log.get().log(Level.FINER, "Image saved to file " + filename+"."+ext);

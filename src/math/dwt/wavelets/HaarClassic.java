@@ -37,4 +37,8 @@ public class HaarClassic implements Wavelet2DTransformation {
 		c4=a+(d-v-h)/4;
 		return new float[]{c1,c2,c3,c4};
 	}
+	@Override
+	public int getLength() {
+		return 2;
+	}
 }

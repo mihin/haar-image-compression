@@ -18,7 +18,7 @@ public class FreqStatistics {
 	public void push(int value){
 		assert !isBlocked;
 //		if (items.get(value)==null) items.add(value, new StatisticsEntry(value));
-//		items.get(value).inc();
+//		items.get(value).inc();s
 		
 		if (items2[value] == null) items2[value] = new StatisticsEntry(value);
 		items2[value].inc();

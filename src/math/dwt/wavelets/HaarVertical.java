@@ -37,4 +37,8 @@ public class HaarVertical implements Wavelet2DTransformation {
 		c4=a-(v+2*d)/4;
 		return new float[]{c1,c2,c3,c4};
 	}
+	@Override
+	public int getLength() {
+		return 2;
+	}
 }

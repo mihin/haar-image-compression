@@ -114,15 +114,16 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	}
 	
 	private StringBuffer bitsOutput;
-	public void toBits(){
+	private static String objectFilename = "tree.txt";
+	public void toBits(String saveFilename){
 //		List<Boolean> bits = new ArrayList<Boolean>();
 		BitOutputStream bos = null;
 		try {
-			bos = new BitOutputStream(new FileOutputStream("bitOut.txt"));
+			bos = new BitOutputStream(new FileOutputStream(saveFilename+objectFilename));
 			bitsOutput = new StringBuffer();
 			toBits(this, bos);
 			bos.close();
-			Log.get().log(Level.FINER,"Tree in bits:\n"+bitsOutput.toString());
+			Log.getInstance().log(Level.FINER,"Tree in bits:\n"+bitsOutput.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -156,9 +157,9 @@ class StatisticsTreeEntry extends StatisticsEntry {
 		}
 	}
 	
-	public static StatisticsTreeEntry readTree(){
+	public static StatisticsTreeEntry readTree(String saveFilename){
 		try {
-			BitInputStream bis = new BitInputStream(new FileInputStream("bitOut.txt"));
+			BitInputStream bis = new BitInputStream(new FileInputStream(saveFilename+objectFilename));
 			StatisticsTreeEntry root = readNextNode(bis);
 			bis.close();
 			return root;

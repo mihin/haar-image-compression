@@ -17,14 +17,29 @@ public class DWT {
 	
 	/**
 	 * Decompose the given matrix 
-	 * *recursive
-	 * @param inputMatrix	matrix to decompose
-	 * @param calculateMatrixNorms calculate norm of output matixes
-	 * @param fileSaveName	filename for file to save outout matixes in
-	 * @param levels 		decomposition level
+	 * @param inputMatrixes			matrix array to decompose
+	 * @param calculateMatrixNorms 	calculate norm of output matixes
+	 * @param logCoefsToFile		to log out matixes
+	 * @param level 				decomposition level
 	 * @return
 	 */
-	public DWTCoefficients decompose(Matrix inputMatrix, boolean calculateMatrixNorms, final String fileSaveName, int levels){
+	public DWTCoefficients[] decompose(Matrix [] inputMatrixes, boolean calculateMatrixNorms, boolean logCoefsToFile, int level){
+		return new DWTCoefficients[] {
+				decompose(inputMatrixes[0], true, logCoefsToFile?"red":""	, level),
+				decompose(inputMatrixes[1], true, logCoefsToFile?"green":""	, level),
+				decompose(inputMatrixes[2], true, logCoefsToFile?"blue":""	, level)
+		};
+	}
+	/**
+	 * Decompose the given matrix 
+	 * *recursive
+	 * @param inputMatrix			matrix to decompose
+	 * @param calculateMatrixNorms 	calculate norm of output matixes
+	 * @param fileSaveName			filename to log out matixes
+	 * @param level 				decomposition level
+	 * @return
+	 */
+	public DWTCoefficients decompose(Matrix inputMatrix, boolean calculateMatrixNorms, final String fileSaveName, int level){
 //		 = new Matrix(input);
 //		System.out.println("Input matrix = " + inputMatrix);
 		
@@ -48,13 +63,13 @@ public class DWT {
 		}
 		processCoeficients(inputMatrix,ma,mv,mh,md,adoptiveMap);
 		DWTCoefficients mDWTCoefs = new DWTCoefficients(
-				(levels>1)?decompose(ma, calculateMatrixNorms, fileSaveName, levels-1):ma
+				(level>1)?decompose(ma, calculateMatrixNorms, fileSaveName, level-1):ma
 				, mv, mh, md, adoptiveMap, calculateMatrixNorms);
 
 		//output decomposition coefficients
 		DecimalFormat myFormatter = new DecimalFormat("#,000");
-		Log.get().log(Level.FINE, 
-				fileSaveName+"L"+levels+" "+
+		Log.getInstance().log(Level.FINE, 
+				fileSaveName+"L"+level+" "+
 				(mDWTCoefs.getNormMh())+
 				"\t"+(mDWTCoefs.getNormMv())+
 				"\t"+(mDWTCoefs.getNormMd())+
@@ -62,10 +77,10 @@ public class DWT {
 				"\t\tV,H,D Sum: "+myFormatter.format(mDWTCoefs.getNormVHDSum())
 				);
 		if (fileSaveName!=null && fileSaveName != ""){
-			ma.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+levels+FileNamesConst.mAverageCoef+FileNamesConst.ext,	"Average coefs "+fileSaveName);
-			mh.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+levels+FileNamesConst.mHorizCoef+FileNamesConst.ext, 	"Horiz coefs "+fileSaveName);
-			mv.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+levels+FileNamesConst.mVerticalCoef+FileNamesConst.ext, 	"Vert coefs "+fileSaveName);
-			md.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+levels+FileNamesConst.mDialonalCoef+FileNamesConst.ext, 	"Diag coefs "+fileSaveName);
+			ma.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mAverageCoef+FileNamesConst.ext,	"Average coefs "+fileSaveName);
+			mh.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mHorizCoef+FileNamesConst.ext, 	"Horiz coefs "+fileSaveName);
+			mv.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mVerticalCoef+FileNamesConst.ext, 	"Vert coefs "+fileSaveName);
+			md.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mDialonalCoef+FileNamesConst.ext, 	"Diag coefs "+fileSaveName);
 			if (adoptiveMap!=null)
 				adoptiveMap.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mTransfMap+FileNamesConst.ext, "Transformation mapping "+fileSaveName);
 		}
@@ -143,7 +158,7 @@ public class DWT {
 		md = coefs.getMd().get();
 		final int rows = mv.length; 
 		final int columns = mv[0].length;
-		Log.get().log(Level.FINEST, "DWT.reconstruct(), " +
+		Log.getInstance().log(Level.FINEST, "DWT.reconstruct(), " +
 				"ma ["+ma.length+", "+ma[0].length+"], " +
 				"mv ["+mv.length+", "+mv[0].length+"]."
 				);

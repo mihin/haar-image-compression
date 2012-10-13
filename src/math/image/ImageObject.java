@@ -45,7 +45,7 @@ public class ImageObject {
 	}
 	
 	public ImageObject(float [][] _pixelsR, float [][] _pixelsG, float [][] _pixelsB, int _width, int _height) {
-		Log.get().log(Level.FINEST, "Creating ImageObject with color arrays");
+		Log.getInstance().log(Level.FINEST, "Creating ImageObject with color arrays");
 		width = _width;
 		height = _height;
 		
@@ -114,7 +114,7 @@ public class ImageObject {
         imageFile.mkdirs();
         try {
 			ImageIO.write(image, ext, imageFile);
-			Log.get().log(Level.FINER, "Image saved to file " + filename+"."+ext);
+			Log.getInstance().log(Level.FINER, "Image saved to file " + filename+"."+ext);
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();

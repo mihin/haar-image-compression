@@ -35,7 +35,7 @@ public class FreqStatistics {
 //		System.out.println("FreqStatistics, sort(); remove null, items size = "+items.size());
 
 		Collections.sort(items);
-		Log.get().log(Level.FINER, "FreqStatistics, sort(); Sorted items size = "+items.size());
+		Log.getInstance().log(Level.FINER, "FreqStatistics, sort(); Sorted items size = "+items.size());
 	}
 	
 	public StatisticsTreeEntry buildTree(){

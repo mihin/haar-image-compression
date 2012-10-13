@@ -1,5 +1,6 @@
 package math.compress;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.logging.Level;
 import math.compress.utils.BitOutputStream;
 import math.dwt.DWTCoefficients;
 import math.dwt.Matrix;
+import math.utils.FileNamesConst;
 import math.utils.Log;
 
 public class Quantization {
@@ -26,11 +28,23 @@ public class Quantization {
 	}
 	
 //	private int [] quantizied;
-	public DWTCoefficients process(DWTCoefficients image){
+	public DWTCoefficients[] process(DWTCoefficients [] image){
+		return new DWTCoefficients[] {
+				process(image[0], 'r'),  
+				process(image[1], 'g'),  
+				process(image[2], 'b'),
+		};
+	}
+	public DWTCoefficients process(DWTCoefficients image, char RGB){
+		
+		final File resDir = new File(FileNamesConst.resultsFolder+FileNamesConst.resultsQuantizationFolder);
+		resDir.mkdirs();
+		final String resFilename = resDir+"/quant"+RGB;
+		
 		Matrix ma, mv, mh, md;
-		mv = matrixCompressCycle(image.getMv());
-		mh = matrixCompressCycle(image.getMh());
-		md = matrixCompressCycle(image.getMd());
+		mv = matrixCompressCycle(image.getMv(), resFilename+FileNamesConst.mVerticalCoef);
+		mh = matrixCompressCycle(image.getMh(), resFilename+FileNamesConst.mHorizCoef);
+		md = matrixCompressCycle(image.getMd(), resFilename+FileNamesConst.mDialonalCoef);
 		
 //		quantizied = null;
 		System.gc();
@@ -38,24 +52,24 @@ public class Quantization {
 		return new DWTCoefficients(image.getMa(), mv, mh, md, null, false);
 	}
 	
-	private Matrix matrixCompressCycle(Matrix m){
+	private Matrix matrixCompressCycle(Matrix m, String saveFilename){
 		FreqStatistics freqStat = new FreqStatistics(LEVELS);
 
 		//quatization & statistics gathering
 		int [] quantizied = processMatrixQuatization(m,freqStat);
 		
 		//Huffman compression
-		List<Boolean> haffmanCodes = doCompress(freqStat,quantizied);
+		List<Boolean> haffmanCodes = doCompress(freqStat,quantizied, saveFilename);
 
 		// save/print Haffman code
 		try {
-			BitOutputStream bos = new BitOutputStream(new FileOutputStream("MVBits.txt"));
+			BitOutputStream bos = new BitOutputStream(new FileOutputStream(saveFilename+"bits.txt"));
 			StringBuffer sb = new StringBuffer();
 			for (Boolean b:haffmanCodes){
 				sb.append(b?'1':'0');
 				bos.writeBit(b?1:0);
 			}
-			Log.get().log(Level.FINEST, "Haffman encoded values:\n"+sb.toString());			
+			Log.getInstance().log(Level.FINEST, "Haffman encoded values:\t"+sb.toString());			
 			bos.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -63,21 +77,21 @@ public class Quantization {
 			e.printStackTrace();
 		}
 		
-		Log.get().log(Level.FINER,"\nDecompression.");
+		Log.getInstance().log(Level.FINER,"\nDecompression.");
 		//read HTree
-		StatisticsTreeEntry mHTree = parseHTree();
+		StatisticsTreeEntry mHTree = parseHTree(saveFilename);
 
 		//get Map Value -> Code
 		HTreeMap codesTree = mHTree.fetchCodesMap();
-		Log.get().log(Level.FINER, "Loaded codes tree:\n"+codesTree.toString());
+		Log.getInstance().log(Level.FINER, "Loaded codes tree:\n"+codesTree.toString());
 		
 		//decode Matrix from Haffman codes
 		Matrix decodedMatrix = null;
 		try {
 			decodedMatrix = decodeMatrix(m.getRowsCount(), m.getColumnsCount(), haffmanCodes, codesTree);
-			String filename = "redMVHDecoded.txt";
+			String filename = saveFilename.substring(saveFilename.indexOf('\\'))+"decoded.txt";
 			decodedMatrix.saveToFile(filename, "Huffman decoded");
-			Log.get().log(Level.FINER, "Decoded matrix saved to file "+filename);
+			Log.getInstance().log(Level.FINER, "Decoded matrix saved to file "+filename);
 		} catch (IllegalFormatFlagsException e) {
 			e.printStackTrace();
 		}
@@ -120,24 +134,24 @@ public class Quantization {
 	/* Huffman compression */
 //	private int [] freqences;
 //	private FreqStatistics freqStat;
-	private List<Boolean> doCompress(FreqStatistics freqStat,int [] quantizied){
+	private List<Boolean> doCompress(FreqStatistics freqStat,int [] quantizied, String saveFilename){
 		//sort by freqs
 		freqStat.sort();
-		Log.get().log(Level.FINEST, "doCompress, sorted, frequences:\n"+freqStat.toString());
+		Log.getInstance().log(Level.FINEST, "doCompress, sorted, frequences:\n"+freqStat.toString());
 		
 		//build tree
 		StatisticsTreeEntry treeRoot = freqStat.buildTree();
 
 		//get Map Value -> Code
 		HTreeMap codesTree = treeRoot.fetchCodesMap();
-		Log.get().log(Level.FINER, codesTree.toString());
+		Log.getInstance().log(Level.FINER, codesTree.toString());
 		
 		//process quantizied Matrix with H-Tree, ?and compress
 		List<Boolean> res = processCompression(codesTree,quantizied);
 //		System.out.println("Decoded by Haffman, bytes ");
 		
 		//TODO Convert HTree to output format
-		treeRoot.toBits();
+		treeRoot.toBits(saveFilename);
 		
 		//TODO assemble formated HTree and compressed HCode
 		
@@ -161,8 +175,8 @@ public class Quantization {
 	}
 
 	/* --== decompression ==--  */
-	private StatisticsTreeEntry parseHTree(){
-		return StatisticsTreeEntry.readTree();
+	private StatisticsTreeEntry parseHTree(String saveFilename){
+		return StatisticsTreeEntry.readTree(saveFilename);
 	}
 
 	private Matrix decodeMatrix(int rowsCount, int columnsCount, List<Boolean> haffmanCodes, HTreeMap codesTree) throws IllegalFormatFlagsException {

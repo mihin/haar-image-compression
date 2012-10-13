@@ -16,39 +16,23 @@ import math.image.ImageObject;
 import math.utils.FileNamesConst;
 import math.utils.Log;
 
-public class Main {
-//	File logFile = null;
+public class TransmormationManager {
+	private int level;
+	private boolean doReconstruct;
+	TransmormationManager(int level, boolean toReconstruct){
+		this.level = level;
+		doReconstruct = toReconstruct;
+	}
+	public void startTransforms(){
+		performDecomposition();
+	}
 
-	private int LEVEL = 3;
-	private boolean DO_RECONSTRUCT = true;
-	private Main(int level, boolean toReconstruct){
-		LEVEL = level;
-		DO_RECONSTRUCT = toReconstruct;
-	}
-	public static void main(String [] in){
-		new Log();
-//		StreamHandler sh = new StreamHandler(System.out, new SimpleFormatter()); 
-//		Log.get().addHandler(sh);
-		int level = 3;
-		boolean toRecostr = true;
-		Level logLevel = Level.FINEST;
-		Log.get().setLevel(logLevel);
-		Main m = new Main(level, toRecostr);
-		
-		Log.get().log(Level.CONFIG, "Launch. Decomposition depth "+level+
-				", recostruction = "+toRecostr+". Logging level is "+logLevel.getName());
-		
-//		m.logFile = new File("log.txt");
-		
-		
-		m.performDecomposition();
-	
-//		m.loadDecompCoefs();
-		
-//		m.reconstructImage();
-	}
-	
+	/**
+	 * Launch transmormation(s)
+	 * Chooses files to be processed
+	 */
 	private void performDecomposition(){
+		new File(FileNamesConst.resultsFolder).mkdirs();
 		final String FILENAME = "image";
 		final String EXTENTION = ".jpg";
 		final String PICFOLDER = "pictures/";
@@ -69,12 +53,20 @@ public class Main {
 //			new File(FileNamesConst.resultsFolder+PICFOLDER).mkdir();
 		decomposeImage(PICFOLDER+"image4"+EXTENTION);
 	}
+	
+	/**
+	 * Calls decompose with custom transform types
+	 * Prints statistics and comapison
+	 * Make quatization of decompCoefs
+	 * Calls reconstruction 
+	 * @param filename Image file for processing
+	 */
 	private void decomposeImage(String filename){
 		ImageAdapter ia = new ImageAdapter();
 		ImageObject imageData = null;
 		try {
 			imageData = ia.readImageFile(filename);
-			Log.get().log(Level.FINE, "Image from file "+filename+" was read(w="+imageData.width+", h="+imageData.height+").");
+			Log.getInstance().log(Level.FINE, "Image from file "+filename+" was read(w="+imageData.width+", h="+imageData.height+").");
 //			System.out.println("Image from file "+filename+" was read(w="+imageData.width+", h="+imageData.height+").");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -124,39 +116,40 @@ public class Main {
 		}
 		*/
 		
-		Log.get().log(Level.INFO, "\n--== Quantization ==--");
-		DWTCoefficients decodedCoefs [] = new DWTCoefficients [3];
-		Quantization mQuantization = new Quantization(2*32);
-		decodedCoefs[0] = mQuantization.process(coefClassic[0]);  
-		decodedCoefs[1] = mQuantization.process(coefClassic[1]);  
-		decodedCoefs[2] = mQuantization.process(coefClassic[2]);
+		final int quantLevels = 2*32;
+		Log.getInstance().log(Level.INFO, "\n -=Quantization=-  ["+quantLevels+" levels]\n");
+		Quantization mQuantization = new Quantization(quantLevels);
+		DWTCoefficients decodedCoefs [] = mQuantization.process(coefClassic);
 		
 		DWT dwt =  new DWT(new HaarClassic());
-		String newFile = "Huffman.jpg";
-		try {
-			new File(newFile).createNewFile();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		String newFile = FileNamesConst.picsFolder+"Huffman.jpg";
+//		try {
+//			new File(newFile).createNewFile();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		imageData.setFilename(newFile);
 		simpleReconstruct(dwt, imageData, decodedCoefs);
 	}
+	
+	/**
+	 * 
+	 * @param doLogCoefs	to save decomp coefs to corresponding file
+	 * @param imageData		image
+	 * @param transform		transformation type
+	 * @return	R, G, B coefs
+	 */
 	private DWTCoefficients[] decomposeImage(boolean doLogCoefs, ImageObject imageData, Wavelet2DTransformation transform){
 		//start Haar decomposition
 		DWT dwt =  new DWT(transform);
-		DWTCoefficients coefR, coefG, coefB;
-		Log.get().log(Level.FINE, "\n"+dwt.getTranformation().getCaption()+": \n\tHor\t\tVer\t\tDiag\t\t\tAverage");
+		Log.getInstance().log(Level.FINE, "\n"+dwt.getTranformation().getCaption()+": \n\tHor\t\tVer\t\tDiag\t\t\tAverage");
 //		System.out.println(dwt.getTranformation().getCaption()+": \n\tHor\t\tVer\t\tDiag\t\t\tAverage");
-		if (doLogCoefs){
-			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, "red"	, LEVEL);
-			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, "green"	, LEVEL);
-			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, "blue"	, LEVEL);
-		} else {
-			coefR = dwt.decompose(new Matrix(imageData.pixelsR), true, ""	, LEVEL);
-			coefG = dwt.decompose(new Matrix(imageData.pixelsG), true, ""	, LEVEL);
-			coefB = dwt.decompose(new Matrix(imageData.pixelsB), true, ""	, LEVEL);
-		}
-//		System.out.println();
+		DWTCoefficients [] coefs = dwt.decompose(
+				new Matrix[]{
+					new Matrix(imageData.pixelsR),
+					new Matrix(imageData.pixelsG),
+					new Matrix(imageData.pixelsB),
+				}, true, doLogCoefs, level);
 
 //		Matrix m = new Matrix(new float [][]{{1,2,3,4}, {4,6,1,2}, {1,2,3,4}, {5,6,7,2}}); 
 //		DWTCoefficients coef = dwt.decompose( m , true, "testMatr");
@@ -166,16 +159,16 @@ public class Main {
 //		System.out.println();
 		
 		//reconstruction
-		if (DO_RECONSTRUCT){
-			simpleReconstruct(dwt, imageData, coefR, coefG, coefB);
+		if (doReconstruct){
+			simpleReconstruct(dwt, imageData, coefs);
 		}
 		
-		return new DWTCoefficients[] {coefR, coefG, coefB};
+		return coefs;
 	}
 	
 //	private int reconsCount = 1;
 	private void simpleReconstruct(DWT dwt, ImageObject imageData, DWTCoefficients... coef){
-		Log.get().log(Level.FINE, "\nReconstruction attempt.. ("+imageData.getFilename()+")" );
+		Log.getInstance().log(Level.FINE, "\nReconstruction attempt.. ("+imageData.getFilename()+")" );
 //		System.out.println("Reconstruction attempt.. ("+imageData.getFilename()+")");
 		
 		Matrix reconstR = dwt.reconstruct(coef[0]);
@@ -188,8 +181,11 @@ public class Main {
 //			System.out.println("_Reconstructed Matrixes are equal");
 		
 		ImageObject reconstImage = new ImageObject(
-				reconstR.get(), reconstG.get(), reconstB.get(), 
-				reconstR.getColumnsCount(), reconstR.getRowsCount()
+				reconstR.get(), 
+				reconstG.get(), 
+				reconstB.get(), 
+				reconstR.getColumnsCount(), 
+				reconstR.getRowsCount()
 				);
 		reconstImage.saveToImageFile(imageData.getFilename()+"Reconst"+dwt.getTranformation().getCaption(), "jpg");
 //		System.out.println();

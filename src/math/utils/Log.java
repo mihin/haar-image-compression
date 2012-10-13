@@ -33,7 +33,7 @@ public class Log {
 //	    //set the console handler to fine:
 //	    consoleHandler.setLevel(java.util.logging.Level.FINEST);
 //	}
-	public Log(){
+	private Log(){
 		mLogger = java.util.logging.Logger.getLogger("dwt_logger");
 //		ConsoleHandler consoleHandler = new ConsoleHandler();
 //        mLogger.addHandler(consoleHandler);
@@ -57,8 +57,8 @@ public class Log {
       consoleHandler.setLevel(java.util.logging.Level.ALL);
 
 	}
-	public static Logger get(){
-//		if (mLogger == null) new Log();
+	public static Logger getInstance(){
+		if (mLogger == null) new Log();
 		return mLogger;
 	}
 }

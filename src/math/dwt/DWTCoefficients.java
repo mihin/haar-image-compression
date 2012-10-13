@@ -35,7 +35,7 @@ public class DWTCoefficients implements Serializable, Composable{
 			nMh = mh.calculateNorm();
 			nMd = md.calculateNorm();
 			
-//			nMa = ma.compose().calculateNorm();
+			nMa = ma.compose().calculateNorm();
 		}
 	}
 

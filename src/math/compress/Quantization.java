@@ -28,14 +28,18 @@ public class Quantization {
 	}
 	
 //	private int [] quantizied;
+	/**
+	 * @param image coefs after dwt
+	 * @return	image coefs restored from qauntization
+	 */
 	public DWTCoefficients[] process(DWTCoefficients [] image){
 		return new DWTCoefficients[] {
-				process(image[0], 'r'),  
-				process(image[1], 'g'),  
-				process(image[2], 'b'),
+				process(image[0], "Red"),  
+				process(image[1], "Green"),  
+				process(image[2], "Blue"),
 		};
 	}
-	public DWTCoefficients process(DWTCoefficients image, char RGB){
+	public DWTCoefficients process(DWTCoefficients image, String RGB){
 		
 		final File resDir = new File(FileNamesConst.resultsFolder+FileNamesConst.resultsQuantizationFolder);
 		resDir.mkdirs();
@@ -48,7 +52,6 @@ public class Quantization {
 		
 //		quantizied = null;
 		System.gc();
-		System.gc();
 		return new DWTCoefficients(image.getMa(), mv, mh, md, null, false);
 	}
 	
@@ -59,7 +62,7 @@ public class Quantization {
 		int [] quantizied = processMatrixQuatization(m,freqStat);
 		
 		//Huffman compression
-		List<Boolean> haffmanCodes = doCompress(freqStat,quantizied, saveFilename);
+		List<Boolean> haffmanCodes = buildTreeAndCompress(freqStat,quantizied, saveFilename);
 
 		// save/print Haffman code
 		try {
@@ -134,7 +137,7 @@ public class Quantization {
 	/* Huffman compression */
 //	private int [] freqences;
 //	private FreqStatistics freqStat;
-	private List<Boolean> doCompress(FreqStatistics freqStat,int [] quantizied, String saveFilename){
+	private List<Boolean> buildTreeAndCompress(FreqStatistics freqStat,int [] quantizied, String saveFilename){
 		//sort by freqs
 		freqStat.sort();
 		Log.getInstance().log(Level.FINEST, "doCompress, sorted, frequences:\n"+freqStat.toString());

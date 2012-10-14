@@ -78,6 +78,7 @@ public class TransmormationManager {
 		DWTCoefficients[] coefClassic, coefAdaptive; 
 		coefClassic =  decomposeImage(logCoefsToFile, imageData, new HaarClassic());
 //		coefAdaptive = decomposeImage(doReconstruct, logCoefsToFile, imageData, new HaarAdaptive(), level);
+		if (doReconstruct) simpleReconstruct(new DWT(new HaarClassic()), imageData, coefClassic);
 		
 		//comparison output
 		/*
@@ -157,11 +158,6 @@ public class TransmormationManager {
 //		Matrix reconst = dwt.reconstruct(coef);
 //		if (reconst.equals(m)) System.out.println("Reconstr M is the same");
 //		System.out.println();
-		
-		//reconstruction
-		if (doReconstruct){
-			simpleReconstruct(dwt, imageData, coefs);
-		}
 		
 		return coefs;
 	}

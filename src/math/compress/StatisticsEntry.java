@@ -113,17 +113,17 @@ class StatisticsTreeEntry extends StatisticsEntry {
 		}
 	}
 	
-	private StringBuffer bitsOutput;
-	private static String objectFilename = "tree.txt";
+	private final static String objectFilename = "tree.txt";
+	private BitOutputStream bitStream;
+	private StringBuilder bitString;
 	public void toBits(String saveFilename){
 //		List<Boolean> bits = new ArrayList<Boolean>();
-		BitOutputStream bos = null;
 		try {
-			bos = new BitOutputStream(new FileOutputStream(saveFilename+objectFilename));
-			bitsOutput = new StringBuffer();
-			toBits(this, bos);
-			bos.close();
-			Log.getInstance().log(Level.FINER,"Tree in bits:\n"+bitsOutput.toString());
+			bitStream = new BitOutputStream(new FileOutputStream(saveFilename+objectFilename));
+			bitString = new StringBuilder();
+			toBits(this);
+			bitStream.close();
+			Log.getInstance().log(Level.FINER,"Tree in bits:\n"+bitString.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -133,27 +133,29 @@ class StatisticsTreeEntry extends StatisticsEntry {
 //		return bos.;
 	}
 	
-	private void toBits(StatisticsTreeEntry node, BitOutputStream bos) throws IOException{
-		if (node==null || bos==null) return;
+	private void toBits(StatisticsTreeEntry node) throws IOException{
+		if (node==null || bitStream==null) return;
 		if (node.leftLeaf==null && node.rightLeaf==null){ //this is a leaf
 //			mHTreeMap.add(node.getValue(), node.code);
 //			System.out.print(node);
 //			bits.add(false);	//is leaf
-			bos.writeBit(0);
-			bos.writeBits(node.getValue(), (short) 8);
+
+			bitStream.writeBit(0);
+			//FIXME customize second parameter - estimate node's value bounds
+			bitStream.writeBits(node.getValue(), (short) 8);
 			
-			bitsOutput.append("0[");
-			bitsOutput.append(node.getValue()+"] ");
+			bitString.append("0[");
+			bitString.append(node.getValue()+"] ");
 		} else { //this a node
-			bos.writeBit(1);	//this is Node
-			bitsOutput.append("1 ");
+			bitStream.writeBit(1);	//this is Node
+			bitString.append("1 ");
 			
-			bos.writeBit(0); 	//parse Left child
-			bitsOutput.append('0');
-			toBits(node.rightLeaf, bos);
-			bos.writeBit(1);	//parse Right child
-			bitsOutput.append('1');
-			toBits(node.leftLeaf, bos);
+			bitStream.writeBit(0); 	//parse Left child
+			bitString.append('0');
+			toBits(node.rightLeaf);
+			bitStream.writeBit(1);	//parse Right child
+			bitString.append('1');
+			toBits(node.leftLeaf);
 		}
 	}
 	

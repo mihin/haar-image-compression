@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;
 
+import math.compress.utils.BinaryFileFormat;
 import math.compress.utils.BitInputStream;
 import math.compress.utils.BitOutputStream;
 import math.utils.Log;
@@ -94,7 +95,7 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	}
 	
 //	private HTreeMap mHTreeMap;
-	public HTreeMap fetchCodesMap(){
+	public HTreeMap buildCodesMap(){
 //		mHTreeMap = map;
 		HTreeMap map = new HTreeMap(); 
 		assembleCodesTree(this, map);
@@ -116,13 +117,18 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	private final static String objectFilename = "tree.txt";
 	private BitOutputStream bitStream;
 	private StringBuilder bitString;
-	public void toBits(String saveFilename){
+	public void toBits(String saveFilename, BitOutputStream binOut){
 //		List<Boolean> bits = new ArrayList<Boolean>();
 		try {
-			bitStream = new BitOutputStream(new FileOutputStream(saveFilename+objectFilename));
+			if (binOut!=null) {
+				bitStream = binOut;
+			} else {
+				Log.getInstance().log(Level.WARNING,"HuffmanTree toBits() binOut is null, writing to "+saveFilename+objectFilename);	
+				bitStream = new BitOutputStream(new FileOutputStream(saveFilename+objectFilename));
+			}
 			bitString = new StringBuilder();
 			toBits(this);
-			bitStream.close();
+			if (binOut==null) bitStream.close();
 			Log.getInstance().log(Level.FINER,"Tree in bits:\n"+bitString.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -142,7 +148,7 @@ class StatisticsTreeEntry extends StatisticsEntry {
 
 			bitStream.writeBit(0);
 			//FIXME customize second parameter - estimate node's value bounds
-			bitStream.writeBits(node.getValue(), (short) 8);
+			bitStream.writeBits(node.getValue(), BinaryFileFormat.HTreeValuePull);
 			
 			bitString.append("0[");
 			bitString.append(node.getValue()+"] ");
@@ -159,6 +165,18 @@ class StatisticsTreeEntry extends StatisticsEntry {
 		}
 	}
 	
+	public int getTreeBitSize(){
+		return getTreeBitSize(this);
+	}
+	private int getTreeBitSize(StatisticsTreeEntry node){
+		if (node==null) return 0;
+		if (node.leftLeaf==null && node.rightLeaf==null){ //this is a leaf
+			return BinaryFileFormat.HTreeValuePull+1;
+		} else { //this a node
+			return 1+1+getTreeBitSize(node.rightLeaf)+1+getTreeBitSize(node.rightLeaf);
+		}
+	}
+	
 	public static StatisticsTreeEntry readTree(String saveFilename){
 		try {
 			BitInputStream bis = new BitInputStream(new FileInputStream(saveFilename+objectFilename));
@@ -170,10 +188,21 @@ class StatisticsTreeEntry extends StatisticsEntry {
 		}
 		return null;
 	}
+	public static StatisticsTreeEntry readTree(BitInputStream binIn){
+		try {
+			StatisticsTreeEntry root = null;
+			binIn.readBits(BinaryFileFormat.HTreeSizePull);
+			root = readNextNode(binIn);
+			return root;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	private static StatisticsTreeEntry readNextNode(BitInputStream bis) throws IOException{
 		int b = bis.readBit(); //type of the node
 		if (b == 0)	//is leaf. Reading value
-			return new StatisticsTreeEntry(new StatisticsEntry(bis.readBits((short)8)));
+			return new StatisticsTreeEntry(new StatisticsEntry(bis.readBits(BinaryFileFormat.HTreeValuePull)));
 		else {	//is Node,
 			StatisticsTreeEntry left = null, right = null;
 			b = bis.readBit(); //0 = left

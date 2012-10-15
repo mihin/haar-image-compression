@@ -22,4 +22,5 @@ public interface FileNamesConst {
 	String propSize = "Size: ";
 	String propSizesDelimeter = "x";
 	
+	String myExt = ".ahaars";
 }

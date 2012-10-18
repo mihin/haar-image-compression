@@ -11,7 +11,7 @@ public class Launcher {
 //		Log.get().addHandler(sh);
 		int level = 1;
 		boolean toRecostr = true;
-		Level logLevel = Level.FINER;
+		Level logLevel = Level.FINEST;
 		Log.getInstance().setLevel(logLevel);
 		TransmormationManager m = new TransmormationManager(level, toRecostr);
 		

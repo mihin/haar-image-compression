@@ -129,7 +129,7 @@ class StatisticsTreeEntry extends StatisticsEntry {
 			bitString = new StringBuilder();
 			toBits(this);
 			if (binOut==null) bitStream.close();
-			Log.getInstance().log(Level.FINER,"Tree in bits:\n"+bitString.toString());
+			Log.getInstance().log(Level.FINER,"Tree in bits (size = "+getTreeBitSize()+"):\n"+bitString.toString());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -191,7 +191,9 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	public static StatisticsTreeEntry readTree(BitInputStream binIn){
 		try {
 			StatisticsTreeEntry root = null;
-			binIn.readBits(BinaryFileFormat.HTreeSizePull);
+			if (BinaryFileFormat.toSaveTreeSize) {
+				Log.getInstance().log(Level.FINEST, "Expecting tree size is " + binIn.readBits(BinaryFileFormat.HTreeSizePull));
+			}
 			root = readNextNode(binIn);
 			return root;
 		} catch (IOException e) {
@@ -203,7 +205,7 @@ class StatisticsTreeEntry extends StatisticsEntry {
 		int b = bis.readBit(); //type of the node
 		if (b == 0)	//is leaf. Reading value
 			return new StatisticsTreeEntry(new StatisticsEntry(bis.readBits(BinaryFileFormat.HTreeValuePull)));
-		else {	//is Node,
+		else {		//is Node,
 			StatisticsTreeEntry left = null, right = null;
 			b = bis.readBit(); //0 = left
 			left = readNextNode(bis);

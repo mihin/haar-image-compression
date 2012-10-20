@@ -148,7 +148,7 @@ class StatisticsTreeEntry extends StatisticsEntry {
 
 			bitStream.writeBit(0);
 			//FIXME customize second parameter - estimate node's value bounds
-			bitStream.writeBits(node.getValue(), BinaryFileFormat.HTreeValuePull);
+			bitStream.writeBits(node.getValue(), BinaryFileFormat.getInstanse().HTreeValuePull);
 			
 			bitString.append("0[");
 			bitString.append(node.getValue()+"] ");
@@ -171,7 +171,7 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	private int getTreeBitSize(StatisticsTreeEntry node){
 		if (node==null) return 0;
 		if (node.leftLeaf==null && node.rightLeaf==null){ //this is a leaf
-			return BinaryFileFormat.HTreeValuePull+1;
+			return BinaryFileFormat.getInstanse().HTreeValuePull+1;
 		} else { //this a node
 			return 1+1+getTreeBitSize(node.rightLeaf)+1+getTreeBitSize(node.rightLeaf);
 		}
@@ -191,8 +191,8 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	public static StatisticsTreeEntry readTree(BitInputStream binIn){
 		try {
 			StatisticsTreeEntry root = null;
-			if (BinaryFileFormat.toSaveTreeSize) {
-				Log.getInstance().log(Level.FINEST, "Expecting tree size is " + binIn.readBits(BinaryFileFormat.HTreeSizePull));
+			if (BinaryFileFormat.getInstanse().toSaveTreeSize) {
+				Log.getInstance().log(Level.FINEST, "Expecting tree size is " + binIn.readBits(BinaryFileFormat.getInstanse().HTreeSizePull));
 			}
 			root = readNextNode(binIn);
 			return root;
@@ -204,7 +204,7 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	private static StatisticsTreeEntry readNextNode(BitInputStream bis) throws IOException{
 		int b = bis.readBit(); //type of the node
 		if (b == 0)	//is leaf. Reading value
-			return new StatisticsTreeEntry(new StatisticsEntry(bis.readBits(BinaryFileFormat.HTreeValuePull)));
+			return new StatisticsTreeEntry(new StatisticsEntry(bis.readBits(BinaryFileFormat.getInstanse().HTreeValuePull)));
 		else {		//is Node,
 			StatisticsTreeEntry left = null, right = null;
 			b = bis.readBit(); //0 = left

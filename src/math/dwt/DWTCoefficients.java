@@ -28,7 +28,8 @@ public class DWTCoefficients implements Serializable, Composable{
 		
 		this.transformationsMap = adoptiveMap;
 		
-		if (ma.getTransform() != null) transform = ma.getTransform(); //inheritance of the transformation type  
+		if (ma.getTransform() != null) 
+			transform = ma.getTransform(); //inheritance of the transformation type  
 		
 		if (calculateMatrixNorms){
 			nMv = mv.calculateNorm();

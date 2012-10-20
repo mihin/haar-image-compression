@@ -165,11 +165,11 @@ public class Matrix implements Serializable, Composable{
 	public Matrix compose() {
 		return this;
 	}
+	private Wavelet2DTransformation transform;
 	@Override
 	public Wavelet2DTransformation getTransform() {
 		return transform;
 	}
-	private Wavelet2DTransformation transform;
 	public void setTransform(Wavelet2DTransformation t){
 		transform = t;
 	}

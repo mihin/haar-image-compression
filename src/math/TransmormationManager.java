@@ -75,10 +75,13 @@ public class TransmormationManager {
 		
 		final boolean logCoefsToFile = true;
 		
-		DWTCoefficients[] coefClassic, coefAdaptive; 
-		coefClassic =  decomposeImage(logCoefsToFile, imageData, new HaarClassic());
-//		coefAdaptive = decomposeImage(doReconstruct, logCoefsToFile, imageData, new HaarAdaptive(), level);
-		if (doReconstruct) simpleReconstruct(new DWT(new HaarClassic()), imageData, coefClassic);
+		DWTCoefficients[] coefClassic, coefAdaptive, dwtCoefs; 
+//		coefClassic =  decomposeImage(logCoefsToFile, imageData, new HaarClassic());
+//		coefAdaptive = decomposeImage(logCoefsToFile, imageData, new HaarAdaptive());
+		
+		Wavelet2DTransformation method = new HaarAdaptive();
+		dwtCoefs = decomposeImage(logCoefsToFile, imageData, method);
+		if (doReconstruct) simpleReconstruct(new DWT(method), imageData, dwtCoefs);
 		
 		//comparison output
 		/*
@@ -120,10 +123,11 @@ public class TransmormationManager {
 		final int quantLevels = 2*32;
 		Log.getInstance().log(Level.INFO, "\n -=Quantization=-  ["+quantLevels+" levels]\n");
 		Quantization mQuantization = new Quantization(quantLevels);
-		DWTCoefficients decodedCoefs [] = mQuantization.process(coefClassic);
+		DWTCoefficients decodedCoefs [] = mQuantization.process(dwtCoefs);
 		
-		DWT dwt =  new DWT(new HaarClassic());
-		String newFile = FileNamesConst.picsFolder+"Huffman.jpg";
+//		method = new HaarClassic();
+		DWT dwt =  new DWT(method);
+		String newFile = filename.replace(".", "Huffman.");
 //		try {
 //			new File(newFile).createNewFile();
 //		} catch (IOException e) {

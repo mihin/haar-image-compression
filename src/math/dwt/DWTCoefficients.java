@@ -22,14 +22,14 @@ public class DWTCoefficients implements Serializable, Composable{
 	
 	//TODO make coefs srialisable to save load them
 	
-	public DWTCoefficients(Composable ma, Matrix mv, Matrix mh, Matrix md, Matrix adoptiveMap, boolean calculateMatrixNorms) {
+	public DWTCoefficients(Composable ma, Matrix mv, Matrix mh, Matrix md, Matrix transformationMap, boolean calculateMatrixNorms) {
 		super();
 		this.ma = ma;
 		this.mv = mv;
 		this.mh = mh;
 		this.md = md;
 		
-		this.transformationsMap = adoptiveMap;
+		this.transformationsMap = transformationMap;
 		
 		if (ma.getTransform() != null) 
 			transform = ma.getTransform(); //inheritance of the transformation type  

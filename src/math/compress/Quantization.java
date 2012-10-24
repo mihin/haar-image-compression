@@ -39,7 +39,7 @@ public class Quantization {
 	public DWTCoefficients[] process(DWTCoefficients [] image){
 		final File resDir = new File(FileNamesConst.resultsFolder+FileNamesConst.resultsQuantizationFolder);
 		resDir.mkdirs();
-		final String outputFilename 	 = resDir+"/out"+FileNamesConst.myExt;
+		final String outputFilename = resDir+"/out"+FileNamesConst.myExt;
 		final File output = new File(outputFilename);
 		BinaryFileFormat.init(LEVELS);
 		DWTCoefficients[] mDWTCoefficients = null;
@@ -53,13 +53,6 @@ public class Quantization {
 			binOut.close();
 			
 			binInput = new BitInputStream(new FileInputStream(output));
-//			mDWTCoefficients =  new DWTCoefficients[] {
-//					process(image[0], binOut, binInput),  
-////					process(image[1], binOut, binInput),
-////					process(image[2], binOut, binInput),
-//					image[1],
-//					image[2],
-//			};
 			mDWTCoefficients =  new DWTCoefficients[] {
 					decompressColorFromStream(binInput),
 					decompressColorFromStream(binInput),
@@ -76,10 +69,18 @@ public class Quantization {
 	//color matrix level
 	private void compressColorToStream(DWTCoefficients image, BitOutputStream binOut) throws IOException{
 		try {
-			matrixToBin(image.getMa(), binOut);
+			matrixToBin(image.getMa(), binOut, BinaryFileFormat.getInstanse().DWTCoefValuePull);
 			huffman(image.getMv(), binOut);
 			huffman(image.getMh(), binOut);
 			huffman(image.getMd(), binOut);
+			
+			// HuffmanAdoptive sign
+			if (image.getMap() != null){
+				binOut.writeBit(1);
+				matrixToBin(image.getMap(), binOut, BinaryFileFormat.getInstanse().AdoptiveMapValuePull);
+			} else {
+				binOut.writeBit(0);
+			}
 			
 //			binOut.flush();
 		} catch (IOException e) {
@@ -88,56 +89,27 @@ public class Quantization {
 		}
 	}
 	private DWTCoefficients decompressColorFromStream(BitInputStream binInput) throws IOException{
-		Matrix ma, mv, mh, md;
+		Matrix ma, mv, mh, md, map = null;
 		try {
-			ma = readMatrixBin(binInput);
+			ma = readMatrixBin(binInput,BinaryFileFormat.getInstanse().DWTCoefValuePull);
 			int rows 	= ma.getRowsCount();
 			int columns = ma.getColumnsCount();
 			mv = huffmanReverse(binInput, rows, columns);
 			mh = huffmanReverse(binInput, rows, columns);
 			md = huffmanReverse(binInput, rows, columns);
-		} catch (IOException e) {
-			Log.getInstance().log(Level.WARNING, "ERROR while reverse quntization");
-			throw e;
-		}
-		System.gc();
-		return new DWTCoefficients(ma, mv, mh, md, null, false);
-	}
-	private DWTCoefficients process(DWTCoefficients image, BitOutputStream binOut, BitInputStream binInput) throws IOException{
-		final File resDir = new File(FileNamesConst.resultsFolder+FileNamesConst.resultsQuantizationFolder);
-		int columns = image.getMv().getColumnsCount();
-		int rows = image.getMv().getRowsCount();
-
-		try {
-			matrixToBin(image.getMa(), binOut);
-			huffman(image.getMv(), binOut);
-			huffman(image.getMh(), binOut);
-			huffman(image.getMd(), binOut);
 			
-			binOut.flush();
-		} catch (IOException e) {
-			Log.getInstance().log(Level.WARNING, "ERROR while quntization");
-			throw e;
-		}
-
-		Matrix 
-			ma = image.getMa(),
-			mv = image.getMv(),
-			mh = image.getMh(),
-			md = image.getMd();
-		
-//		quantizied = null;
-		try {
-			ma = readMatrixBin(binInput);
-			mv = huffmanReverse(binInput, rows, columns);
-			mh = huffmanReverse(binInput, rows, columns);
-			md = huffmanReverse(binInput, rows, columns);
+			// HuffmanAdoptive sign
+			boolean isAdoptiveMethod = binInput.readBit()==1;
+			if (isAdoptiveMethod){
+				map = readMatrixBin(binInput,BinaryFileFormat.getInstanse().AdoptiveMapValuePull);
+				Log.getInstance().log(Level.FINER, "decompressColorFromStream, Color compressed with"+(isAdoptiveMethod?"":"out")+" adoptive method");
+			}
 		} catch (IOException e) {
 			Log.getInstance().log(Level.WARNING, "ERROR while reverse quntization");
 			throw e;
 		}
 		System.gc();
-		return new DWTCoefficients(ma, mv, mh, md, null, false);
+		return new DWTCoefficients(ma, mv, mh, md, map, false);
 	}
 	
 	//dwt color matrixes level
@@ -182,21 +154,12 @@ public class Quantization {
 		
 			//decode Matrix from Haffman codes
 			decodedMatrix = decodeMatrix(rows, columns, huffmanCodeRestored, codesTree);
-//			String filename = saveFilename.substring(saveFilename.indexOf('\\'))+"decoded.txt";
-//			decodedMatrix.saveToFile(filename, "Huffman decoded");
-//			Log.getInstance().log(Level.FINER, "Decoded matrix saved to file "+filename);
-//		} catch (IllegalFormatFlagsException e) {
-//			e.printStackTrace();
 		} catch (IOException e) {
 			Log.getInstance().log(Level.FINEST, "Exception after read bits:"+count+" ("+hufCodeLength+")");
 //			e.printStackTrace();
 			throw e;
 		}
 		return decodedMatrix;
-	}
-	private Matrix matrixCompressCycle(Matrix m, BitOutputStream binOut, BitInputStream binInput) throws IOException{
-			huffman(m, binOut);
-			return huffmanReverse(binInput, m.getRowsCount(), m.getColumnsCount());
 	}
 
 	//quantization utils
@@ -311,24 +274,26 @@ public class Quantization {
 	}
 	
 	//non quantization utils
-	private void matrixToBin(Matrix m, BitOutputStream binOut) throws IOException{
+	private void matrixToBin(Matrix m, BitOutputStream binOut, short valuePull) throws IOException{
+		Log.getInstance().log(Level.FINER,"\nMatrixToBin.");
 		int rows 	= m.getRowsCount();
 		int columns = m.getColumnsCount();
 		binOut.writeBits(rows, BinaryFileFormat.getInstanse().imageSizeValuePull);
 		binOut.writeBits(columns, BinaryFileFormat.getInstanse().imageSizeValuePull);
 		for (int row = 0; row < rows; row++){
 			for (int column = 0; column < columns; column++){
-				binOut.writeBits(Math.round(m.get(row, column)), BinaryFileFormat.getInstanse().DWTCoefValuePull);
+				binOut.writeBits(Math.round(m.get(row, column)), valuePull);
 			}
 		}
 	}
-	private Matrix readMatrixBin(BitInputStream binInput) throws IOException{
+	private Matrix readMatrixBin(BitInputStream binInput, short valuePull) throws IOException{
+		Log.getInstance().log(Level.FINER,"\nRead Matrix Bin.");
 		int rows 	= binInput.readBits(BinaryFileFormat.getInstanse().imageSizeValuePull);
 		int columns = binInput.readBits(BinaryFileFormat.getInstanse().imageSizeValuePull);
 		Matrix res = new Matrix(rows, columns);
 		for (int row = 0; row < rows; row++){
 			for (int column = 0; column < columns; column++){
-				res.set(row, column, binInput.readBits(BinaryFileFormat.getInstanse().DWTCoefValuePull));
+				res.set(row, column, binInput.readBits(valuePull));
 			}
 		}
 		return res;

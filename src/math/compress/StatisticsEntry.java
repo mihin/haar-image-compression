@@ -117,14 +117,15 @@ class StatisticsTreeEntry extends StatisticsEntry {
 	private final static String objectFilename = "tree.txt";
 	private BitOutputStream bitStream;
 	private StringBuilder bitString;
-	public void toBits(String saveFilename, BitOutputStream binOut){
+	public void toBits(BitOutputStream binOut){
 //		List<Boolean> bits = new ArrayList<Boolean>();
 		try {
 			if (binOut!=null) {
 				bitStream = binOut;
 			} else {
-				Log.getInstance().log(Level.WARNING,"HuffmanTree toBits() binOut is null, writing to "+saveFilename+objectFilename);	
-				bitStream = new BitOutputStream(new FileOutputStream(saveFilename+objectFilename));
+				Log.getInstance().log(Level.WARNING,"HuffmanTree toBits() binOut is null, writing to "/*+saveFilename+objectFilename*/);
+				return;
+//				bitStream = new BitOutputStream(new FileOutputStream(saveFilename+objectFilename));
 			}
 			bitString = new StringBuilder();
 			toBits(this);

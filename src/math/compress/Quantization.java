@@ -2,7 +2,6 @@ package math.compress;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +30,8 @@ public class Quantization {
 	}
 	
 //	private int [] quantizied;
+	
+	//whole image level
 	/**
 	 * @param image coefs after dwt
 	 * @return	image coefs restored from qauntization
@@ -46,32 +47,72 @@ public class Quantization {
 			BitOutputStream binOut = null;
 			BitInputStream binInput = null;
 			binOut = new BitOutputStream(new FileOutputStream(output));
-			binInput = new BitInputStream(new FileInputStream(output));
-			mDWTCoefficients =  new DWTCoefficients[] {
-					process(image[0], "Red", 	binOut, binInput),  
-//					process(image[1], "Green",	binOut, binInput),
-//					process(image[2], "Blue", 	binOut, binInput),
-					image[1],
-					image[2],
-			};
+			compressColorToStream(image[DWTCoefficients.RED	 ], binOut);
+			compressColorToStream(image[DWTCoefficients.GREEN], binOut);
+			compressColorToStream(image[DWTCoefficients.BLUE ], binOut);
 			binOut.close();
+			
+			binInput = new BitInputStream(new FileInputStream(output));
+//			mDWTCoefficients =  new DWTCoefficients[] {
+//					process(image[0], binOut, binInput),  
+////					process(image[1], binOut, binInput),
+////					process(image[2], binOut, binInput),
+//					image[1],
+//					image[2],
+//			};
+			mDWTCoefficients =  new DWTCoefficients[] {
+					decompressColorFromStream(binInput),
+					decompressColorFromStream(binInput),
+					decompressColorFromStream(binInput),
+			};
+			
 			binInput.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return mDWTCoefficients;
 	}
-	public DWTCoefficients process(DWTCoefficients image, String RGB, BitOutputStream binOut, BitInputStream binInput) throws IOException{
+	
+	//color matrix level
+	private void compressColorToStream(DWTCoefficients image, BitOutputStream binOut) throws IOException{
+		try {
+			matrixToBin(image.getMa(), binOut);
+			huffman(image.getMv(), binOut);
+			huffman(image.getMh(), binOut);
+			huffman(image.getMd(), binOut);
+			
+//			binOut.flush();
+		} catch (IOException e) {
+			Log.getInstance().log(Level.WARNING, "ERROR while quntization");
+			throw e;
+		}
+	}
+	private DWTCoefficients decompressColorFromStream(BitInputStream binInput) throws IOException{
+		Matrix ma, mv, mh, md;
+		try {
+			ma = readMatrixBin(binInput);
+			int rows 	= ma.getRowsCount();
+			int columns = ma.getColumnsCount();
+			mv = huffmanReverse(binInput, rows, columns);
+			mh = huffmanReverse(binInput, rows, columns);
+			md = huffmanReverse(binInput, rows, columns);
+		} catch (IOException e) {
+			Log.getInstance().log(Level.WARNING, "ERROR while reverse quntization");
+			throw e;
+		}
+		System.gc();
+		return new DWTCoefficients(ma, mv, mh, md, null, false);
+	}
+	private DWTCoefficients process(DWTCoefficients image, BitOutputStream binOut, BitInputStream binInput) throws IOException{
 		final File resDir = new File(FileNamesConst.resultsFolder+FileNamesConst.resultsQuantizationFolder);
-		final String resFilename = resDir+"/quant"+RGB;
 		int columns = image.getMv().getColumnsCount();
 		int rows = image.getMv().getRowsCount();
 
 		try {
 			matrixToBin(image.getMa(), binOut);
-			huffman(image.getMv(), resFilename+FileNamesConst.mVerticalCoef,	binOut);
-			huffman(image.getMh(), resFilename+FileNamesConst.mHorizCoef, 		binOut);
-			huffman(image.getMd(), resFilename+FileNamesConst.mDialonalCoef,	binOut);
+			huffman(image.getMv(), binOut);
+			huffman(image.getMh(), binOut);
+			huffman(image.getMd(), binOut);
 			
 			binOut.flush();
 		} catch (IOException e) {
@@ -88,9 +129,9 @@ public class Quantization {
 //		quantizied = null;
 		try {
 			ma = readMatrixBin(binInput);
-			mv = huffmanReverse(binInput, rows, columns, resFilename+FileNamesConst.mVerticalCoef);
-			mh = huffmanReverse(binInput, rows, columns, resFilename+FileNamesConst.mHorizCoef);
-			md = huffmanReverse(binInput, rows, columns, resFilename+FileNamesConst.mDialonalCoef);
+			mv = huffmanReverse(binInput, rows, columns);
+			mh = huffmanReverse(binInput, rows, columns);
+			md = huffmanReverse(binInput, rows, columns);
 		} catch (IOException e) {
 			Log.getInstance().log(Level.WARNING, "ERROR while reverse quntization");
 			throw e;
@@ -99,38 +140,20 @@ public class Quantization {
 		return new DWTCoefficients(ma, mv, mh, md, null, false);
 	}
 	
-	private void huffman(Matrix m, String saveFilename, BitOutputStream binOut) throws IOException{
+	//dwt color matrixes level
+	private void huffman(Matrix m, BitOutputStream binOut) throws IOException{
 		Log.getInstance().log(Level.FINER,"\nHuffman codding.");
 		FreqStatistics freqStat = new FreqStatistics(LEVELS);
 		//quatization & statistics gathering
 		int [] quantizied = processMatrixQuatization(m,freqStat);
 	
-		List<Boolean> haffmanCode = buildTreeAndCompress(freqStat,quantizied, saveFilename, binOut);
-//		try {
-//			binOut.flush();
-////			binOut.close();	//not here!
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-
-		// save/print Haffman code
-//		try {
-//			BitOutputStream bos = new BitOutputStream(new FileOutputStream(saveFilename+"bits.txt"));
-//			for (Boolean b:haffmanCode){
-//				bos.writeBit(b?1:0);
-//			}
-//			bos.close();
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
+		List<Boolean> haffmanCode = buildTreeAndCompress(freqStat,quantizied, binOut);
 
 		haffmanCode.clear();
 		quantizied = null;
 		freqStat.free();
 	}
-	private Matrix huffmanReverse(BitInputStream binInput, int rows, int columns, String saveFilename) throws IOException{
+	private Matrix huffmanReverse(BitInputStream binInput, int rows, int columns) throws IOException{
 		Log.getInstance().log(Level.FINER,"\nHuffman decompression.");
 		
 		//read HTree
@@ -159,9 +182,9 @@ public class Quantization {
 		
 			//decode Matrix from Haffman codes
 			decodedMatrix = decodeMatrix(rows, columns, huffmanCodeRestored, codesTree);
-			String filename = saveFilename.substring(saveFilename.indexOf('\\'))+"decoded.txt";
-			decodedMatrix.saveToFile(filename, "Huffman decoded");
-			Log.getInstance().log(Level.FINER, "Decoded matrix saved to file "+filename);
+//			String filename = saveFilename.substring(saveFilename.indexOf('\\'))+"decoded.txt";
+//			decodedMatrix.saveToFile(filename, "Huffman decoded");
+//			Log.getInstance().log(Level.FINER, "Decoded matrix saved to file "+filename);
 //		} catch (IllegalFormatFlagsException e) {
 //			e.printStackTrace();
 		} catch (IOException e) {
@@ -171,11 +194,12 @@ public class Quantization {
 		}
 		return decodedMatrix;
 	}
-	private Matrix matrixCompressCycle(Matrix m, String saveFilename, BitOutputStream binOut, BitInputStream binInput) throws IOException{
-			huffman(m, saveFilename, binOut);
-			return huffmanReverse(binInput, m.getRowsCount(), m.getColumnsCount(), saveFilename);
+	private Matrix matrixCompressCycle(Matrix m, BitOutputStream binOut, BitInputStream binInput) throws IOException{
+			huffman(m, binOut);
+			return huffmanReverse(binInput, m.getRowsCount(), m.getColumnsCount());
 	}
 
+	//quantization utils
 	private int [] processMatrixQuatization(Matrix m, FreqStatistics freqStat) {
 		int [] quantizied = new int [m.getColumnsCount()*m.getRowsCount()];
 		final int columns = m.getColumnsCount();
@@ -191,7 +215,6 @@ public class Quantization {
 		}
 		return quantizied;
 	}
-
 	private int quant(float f) {
 		f = f + SHIFT;
 		if (f < 0) f = 0;						//f = Min(); f = Max()
@@ -204,11 +227,9 @@ public class Quantization {
 	}
 	
 	
-	/* Huffman compression */
-//	private int [] freqences;
-//	private FreqStatistics freqStat;
-	private List<Boolean> buildTreeAndCompress(FreqStatistics freqStat,int [] quantizied, 
-			String saveFilename, BitOutputStream binOut) throws IOException{
+	// Huffman compression
+	
+	private List<Boolean> buildTreeAndCompress(FreqStatistics freqStat,int [] quantizied, BitOutputStream binOut) throws IOException{
 		//sort by freqs
 		freqStat.sort();
 		Log.getInstance().log(Level.FINEST, "buildTreeAndCompress, sorted, frequences:\n"+freqStat.toString());
@@ -217,13 +238,13 @@ public class Quantization {
 		StatisticsTreeEntry treeRoot = freqStat.buildTree();
 
 		//insert next block size
+		int treeBitsLength = treeRoot.getTreeBitSize();
 		if (BinaryFileFormat.getInstanse().toSaveTreeSize){
-			int treeBitsLength = treeRoot.getTreeBitSize();
 			binOut.writeBits(treeBitsLength, BinaryFileFormat.getInstanse().HTreeSizePull);
 		}
 		
 		//TODO Convert HTree to output format
-		treeRoot.toBits(saveFilename, binOut);	//should write treeRoot.getTreeBitSize() bits of data
+		treeRoot.toBits(binOut);	//should write treeRoot.getTreeBitSize() bits of data
 
 		//get Map Value -> Code
 		HTreeMap codesTree = treeRoot.buildCodesMap();
@@ -242,7 +263,7 @@ public class Quantization {
 //				binOut.writeBits(b?1:0, (short)1);
 		}
 		
-		Log.getInstance().log(Level.FINER, "buildTreeAndCompress, huffmanCode (size="+ huffmanCode.size() +" bits), "+count+" was output to stream.");
+		Log.getInstance().log(Level.FINER, "buildTreeAndCompress, huffmanCode (size="+ huffmanCode.size() +" bits), "+count+" was output to stream. Tree size = " + treeBitsLength);
 		//TODO assemble formated HTree and compressed HCode
 		
 		return huffmanCode;
@@ -264,15 +285,13 @@ public class Quantization {
 		return haffmanCode;
 	}
 
-	/* --== decompression ==--  */
+	// Huffman decompression
 	private StatisticsTreeEntry parseHTree(String saveFilename){
 		return StatisticsTreeEntry.readTree(saveFilename);
 	}
 	private StatisticsTreeEntry parseHTree(BitInputStream binIn){
 		return StatisticsTreeEntry.readTree(binIn);
 	}
-	
-
 	private Matrix decodeMatrix(int rowsCount, int columnsCount, List<Boolean> haffmanCodes, HTreeMap codesTree) throws IllegalFormatFlagsException {
 		String code = "";
 		int [] values = new int [rowsCount*columnsCount];
@@ -291,10 +310,7 @@ public class Quantization {
 		return m;
 	}
 	
-	/**
-	 * Write matrix to bit-file in a common way
-	 * @throws IOException 
-	 */
+	//non quantization utils
 	private void matrixToBin(Matrix m, BitOutputStream binOut) throws IOException{
 		int rows 	= m.getRowsCount();
 		int columns = m.getColumnsCount();
@@ -317,4 +333,5 @@ public class Quantization {
 		}
 		return res;
 	}
+
 }

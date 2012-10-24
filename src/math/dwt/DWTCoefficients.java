@@ -4,6 +4,9 @@ import java.io.Serializable;
 
 public class DWTCoefficients implements Serializable, Composable{
 	private static final long serialVersionUID = 7791903351562707262L;
+	public static final int RED 	= 0;
+	public static final int GREEN 	= 1;
+	public static final int BLUE 	= 2;
 	
 	/**
 	 * Matrixes of coefficients (avarege, vertical, horizontal, diagonal)

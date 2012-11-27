@@ -47,16 +47,20 @@ public class Quantization {
 			BitOutputStream binOut = null;
 			BitInputStream binInput = null;
 			binOut = new BitOutputStream(new FileOutputStream(output));
+			Log.getInstance().log(Level.FINER, "\nStart image bit-codding, output file: " + output.getName());
 			compressColorToStream(image[DWTCoefficients.RED	 ], binOut);
 			compressColorToStream(image[DWTCoefficients.GREEN], binOut);
 			compressColorToStream(image[DWTCoefficients.BLUE ], binOut);
 			binOut.close();
 			
+			Log.getInstance().log(Level.FINER, "\nStart image bit-decompression");
 			binInput = new BitInputStream(new FileInputStream(output));
 			mDWTCoefficients =  new DWTCoefficients[] {
 					decompressColorFromStream(binInput),
 					decompressColorFromStream(binInput),
 					decompressColorFromStream(binInput),
+//					image[DWTCoefficients.GREEN],
+//					image[DWTCoefficients.BLUE]
 			};
 			
 			binInput.close();
@@ -74,10 +78,10 @@ public class Quantization {
 			huffman(image.getMh(), binOut);
 			huffman(image.getMd(), binOut);
 			
-			// HuffmanAdoptive sign
+			// HuffmanAdaptive sign
 			if (image.getMap() != null){
 				binOut.writeBit(1);
-				matrixToBin(image.getMap(), binOut, BinaryFileFormat.getInstanse().AdoptiveMapValuePull);
+				matrixToBin(image.getMap(), binOut, BinaryFileFormat.getInstanse().AdaptiveMapValuePull);
 			} else {
 				binOut.writeBit(0);
 			}
@@ -98,11 +102,11 @@ public class Quantization {
 			mh = huffmanReverse(binInput, rows, columns);
 			md = huffmanReverse(binInput, rows, columns);
 			
-			// HuffmanAdoptive sign
-			boolean isAdoptiveMethod = binInput.readBit()==1;
-			if (isAdoptiveMethod){
-				map = readMatrixBin(binInput,BinaryFileFormat.getInstanse().AdoptiveMapValuePull);
-				Log.getInstance().log(Level.FINER, "decompressColorFromStream, Color compressed with"+(isAdoptiveMethod?"":"out")+" adoptive method");
+			// HuffmanAdaptive sign
+			boolean isAdaptiveMethod = binInput.readBit()==1;
+			if (isAdaptiveMethod){
+				map = readMatrixBin(binInput,BinaryFileFormat.getInstanse().AdaptiveMapValuePull);
+				Log.getInstance().log(Level.FINER, "decompressColorFromStream, Color compressed with"+(isAdaptiveMethod?"":"out")+" adaptive method");
 			}
 		} catch (IOException e) {
 			Log.getInstance().log(Level.WARNING, "ERROR while reverse quntization");
@@ -226,7 +230,7 @@ public class Quantization {
 //				binOut.writeBits(b?1:0, (short)1);
 		}
 		
-		Log.getInstance().log(Level.FINER, "buildTreeAndCompress, huffmanCode (size="+ huffmanCode.size() +" bits), "+count+" was output to stream. Tree size = " + treeBitsLength);
+		Log.getInstance().log(Level.FINER, "buildTreeAndCompress, huffmanCode (size="+ huffmanCode.size() +" bits, max="+Math.pow(2, BinaryFileFormat.getInstanse().HCodedDataSizePull)+"), "+count+" was output to stream. Tree size = " + treeBitsLength);
 		//TODO assemble formated HTree and compressed HCode
 		
 		return huffmanCode;

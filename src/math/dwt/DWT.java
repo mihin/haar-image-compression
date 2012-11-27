@@ -57,14 +57,14 @@ public class DWT {
 		ma.setTransform(tranformation); //init further composable coefss
 				
 //		System.out.println("DWT is processing "+fileSaveName+". Transform = "+tranformation.getCaption());
-		Matrix adoptiveMap = null;
+		Matrix adaptiveMap = null;
 		if (tranformation instanceof HaarAdaptive){
-			adoptiveMap = new Matrix(coefRows,coefColumns);
+			adaptiveMap = new Matrix(coefRows,coefColumns);
 		}
-		processCoeficients(inputMatrix,ma,mv,mh,md,adoptiveMap);
+		processCoeficients(inputMatrix,ma,mv,mh,md,adaptiveMap);
 		DWTCoefficients mDWTCoefs = new DWTCoefficients(
 				(level>1)?decompose(ma, calculateMatrixNorms, fileSaveName, level-1):ma
-				, mv, mh, md, adoptiveMap, calculateMatrixNorms);
+				, mv, mh, md, adaptiveMap, calculateMatrixNorms);
 
 		//output decomposition coefficients
 		DecimalFormat myFormatter = new DecimalFormat("#,000");
@@ -81,8 +81,8 @@ public class DWT {
 			mh.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mHorizCoef+FileNamesConst.ext, 	"Horiz coefs "+fileSaveName);
 			mv.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mVerticalCoef+FileNamesConst.ext, 	"Vert coefs "+fileSaveName);
 			md.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mDialonalCoef+FileNamesConst.ext, 	"Diag coefs "+fileSaveName);
-			if (adoptiveMap!=null)
-				adoptiveMap.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mTransfMap+FileNamesConst.ext, "Transformation mapping "+fileSaveName);
+			if (adaptiveMap!=null)
+				adaptiveMap.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mTransfMap+FileNamesConst.ext, "Transformation mapping "+fileSaveName);
 		}
 		return mDWTCoefs;
 	}
@@ -97,7 +97,7 @@ public class DWT {
 	 * @param mv Vertical
 	 * @param mh Horiz
 	 * @param md Diag
-	 * @param map transf map for Adoptive Haar
+	 * @param map transf map for Adaptive Haar
 	 */
 	private void processCoeficients(Matrix inputMatrix, Matrix ma, Matrix mv, Matrix mh, Matrix md, Matrix map) {
 		int rows = inputMatrix.getRowsCount();

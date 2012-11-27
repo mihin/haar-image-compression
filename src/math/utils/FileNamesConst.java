@@ -17,7 +17,7 @@ public interface FileNamesConst {
 	String cGreen = "green";
 	String cBlue = "blue";
 	
-	String methodNewHaar = "Adoptive";
+	String methodNewHaar = "Adaptive";
 	
 	String propSize = "Size: ";
 	String propSizesDelimeter = "x";

@@ -24,10 +24,10 @@ public class BinaryFileFormat
 	public short DWTLevelsPull 		= 3;
 	public short HTreeSizePull 		= 2*10;
 	public short HTreeValuePull 	= 2*9;
-	public short HCodedDataSizePull = 16;
+	public short HCodedDataSizePull = 20;	// 1024*1024
 	public short DWTCoefValuePull 	= 8;	// 256 values
 	public short imageSizeValuePull = 12;	// 4*1024
-	public short AdoptiveMapValuePull= 2;	// 4 values
+	public short AdaptiveMapValuePull= 2;	// 4 values
 	
 	//utils
 	private double logOfBase(int base, int num) {

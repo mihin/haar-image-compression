@@ -107,7 +107,7 @@ public class Matrix implements Serializable, Composable{
 		try {
 //			File f = new File(FileNaming.resultsFolder);
 //			f.mkdirs();
-			File f = new File(FileNamesConst.resultsFolder+path);
+			File f = new File(FileNamesConst.resultsFolder+"/"+FileNamesConst.resultsDebugDataFolder, path);
 			
 			bw = new BufferedWriter(new FileWriter(f));
 //			os = new BufferedOutputStream(new FileOutputStream(f));

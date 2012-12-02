@@ -24,7 +24,7 @@ public class TransmormationManager {
 	TransmormationManager(int level, boolean toReconstruct) {
 		this.level = level;
 		doReconstruct = toReconstruct;
-		transformClass = HaarClassic.class;
+		transformClass = HaarAdaptive.class;
 	}
 
 	public void startTransforms() {
@@ -36,9 +36,10 @@ public class TransmormationManager {
 	 */
 	private void performDecomposition() {
 		new File(FileNamesConst.resultsFolder).mkdirs();
+		new File(FileNamesConst.resultsFolder, FileNamesConst.picsFolder).mkdirs();
+		new File(FileNamesConst.resultsFolder, FileNamesConst.resultsDebugDataFolder).mkdirs();
+		final String EXTENTION = FileNamesConst.extBMP;
 		final String FILENAME = "image";
-		final String EXTENTION = ".jpg";
-		final String PICFOLDER = "pictures/";
 
 		int fileLimit = 1;
 
@@ -54,7 +55,7 @@ public class TransmormationManager {
 		//
 		// if (DO_RECONSTRUCT)
 		// new File(FileNamesConst.resultsFolder+PICFOLDER).mkdir();
-		decomposeImage(PICFOLDER + "image2" + EXTENTION);
+		decomposeImage(FileNamesConst.picsFolder + "image5" + EXTENTION);
 	}
 
 	/**
@@ -124,22 +125,23 @@ public class TransmormationManager {
 		 * Log.get().log(Level.FINEST, sb.toString()); }
 		 */
 
+		final String imageFilename = imageData.getFilename() + method.getCaption();
 		final int quantLevels = 2 * 32;
 		Log.getInstance().log(Level.INFO,
-				"\n -=Quantization=-  [" + quantLevels + " levels]\n");
+				"\n -=Quantization=-  [" + quantLevels + " levels]");
 		Quantization mQuantization = new Quantization(quantLevels);
-		DWTCoefficients decodedCoefs[] = mQuantization.process(dwtCoefs);
+		DWTCoefficients decodedCoefs[] = mQuantization.process(dwtCoefs, imageFilename);
 
-		// method = new HaarClassic();
-		DWT dwt = new DWT(method);
-		String newFile = filename.replace(".", "Huffman.");
-		// try {
-		// new File(newFile).createNewFile();
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		imageData.setFilename(newFile);
-		simpleReconstruct(dwt, imageData, decodedCoefs);
+		if (doReconstruct)
+			if (decodedCoefs != null) {
+				DWT dwt = new DWT(method);
+				String newFile = filename.replace(".", "Huffman.");
+				imageData.setFilename(newFile);
+				simpleReconstruct(dwt, imageData, decodedCoefs);
+			} else {
+				Log.getInstance().log(Level.WARNING,
+						"Reconstruction received empty image coefs");
+			}
 	}
 
 	/**
@@ -196,8 +198,9 @@ public class TransmormationManager {
 				reconstG.get(), reconstB.get(), reconstR.getColumnsCount(),
 				reconstR.getRowsCount());
 		reconstImage.saveToImageFile(imageData.getFilename() + "Reconst"
-				+ dwt.getTranformation().getCaption(), "jpg");
-		// System.out.println();
+				+ dwt.getTranformation().getCaption(),FileNamesConst.extJPEG);
+		reconstImage.saveToImageFile(imageData.getFilename() + "Reconst"
+				+ dwt.getTranformation().getCaption(),FileNamesConst.extBMP);
 	}
 
 	/**
@@ -229,11 +232,11 @@ public class TransmormationManager {
 		ImageAdapter ia = new ImageAdapter();
 		ImageObject imageData = ia.readImageCoefficients(new String[] {
 				FileNamesConst.cRed + transfName + matrixName
-						+ FileNamesConst.ext,
+						+ FileNamesConst.extData,
 				FileNamesConst.cGreen + transfName + matrixName
-						+ FileNamesConst.ext,
+						+ FileNamesConst.extData,
 				FileNamesConst.cBlue + transfName + matrixName
-						+ FileNamesConst.ext });
+						+ FileNamesConst.extData });
 		if (imageData == null) {
 			System.err.println("Reading image from coefs unsuccessful ("
 					+ transfName + ", " + matrixName + ")");

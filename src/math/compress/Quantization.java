@@ -34,14 +34,15 @@ public class Quantization {
 	//whole image level
 	/**
 	 * @param image coefs after dwt
+	 * @param imageFilename 
 	 * @return	image coefs restored from qauntization
 	 */
-	public DWTCoefficients[] process(DWTCoefficients [] image){
-		final File resDir = new File(FileNamesConst.resultsFolder+FileNamesConst.resultsQuantizationFolder);
-		resDir.mkdirs();
-		final String outputFilename = resDir+"/out"+FileNamesConst.myExt;
-		final File output = new File(outputFilename);
+	public DWTCoefficients[] process(DWTCoefficients [] image, String imageFilename){
 		BinaryFileFormat.init(LEVELS);
+//		final File resDir = new File(FileNamesConst.resultsFolder+FileNamesConst.resultsQuantizationFolder);
+//		resDir.mkdirs();
+//		final String outputFilename = resDir+"/out"+FileNamesConst.myExt;
+		final File output = new File(FileNamesConst.resultsFolder, imageFilename+FileNamesConst.extBIN);
 		DWTCoefficients[] mDWTCoefficients = null;
 		try {
 			BitOutputStream binOut = null;

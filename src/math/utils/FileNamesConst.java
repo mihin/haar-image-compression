@@ -1,9 +1,14 @@
 package math.utils;
 
 public interface FileNamesConst {
-	String ext = ".txt";
+	String extData = ".txt";
+	String extJPEG = ".jpg";
+	String extBMP = ".bmp";
+	String extBIN = ".ahaars";
+	
 	String resultsFolder = "results/";
 	String resultsQuantizationFolder = "quantization/";
+	String resultsDebugDataFolder = "debugData/";
 	String picsFolder = "pictures/";
 	
 	String mAverageCoef = "MA";
@@ -22,5 +27,4 @@ public interface FileNamesConst {
 	String propSize = "Size: ";
 	String propSizesDelimeter = "x";
 	
-	String myExt = ".ahaars";
 }

@@ -110,11 +110,11 @@ public class ImageObject {
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		image.setRGB(0, 0, width, height, rgbs, 0, width);
 
-        File imageFile = new File(FileNamesConst.resultsFolder+filename+"."+ext);
-        imageFile.mkdirs();
+        File imageFile = new File(FileNamesConst.resultsFolder+filename+ext);
         try {
+        	if (ext.charAt(0) == '.') ext = ext.substring(1);
 			ImageIO.write(image, ext, imageFile);
-			Log.getInstance().log(Level.FINER, "Image saved to file " + filename+"."+ext);
+			Log.getInstance().log(Level.FINER, "Image saved to file " +imageFile.getAbsolutePath());
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -131,10 +131,10 @@ public class ImageObject {
 		image.setRGB(0, 	height, width, height, images[2].rgbs, 0, width);
 		image.setRGB(width, height, width, height, images[3].rgbs, 0, width);
 		
-		File imageFile = new File(FileNamesConst.resultsFolder+filename+"."+ext);
+		File imageFile = new File(FileNamesConst.resultsFolder+filename+ext);
         try {
 			ImageIO.write(image, ext, imageFile);
-			System.out.println("4 Images saved to file " + filename+"."+ext);
+			System.out.println("4 Images saved to file " + imageFile.getCanonicalPath());
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();

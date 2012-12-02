@@ -39,7 +39,7 @@ public class DWT {
 	 * @param level 				decomposition level
 	 * @return
 	 */
-	public DWTCoefficients decompose(Matrix inputMatrix, boolean calculateMatrixNorms, final String fileSaveName, int level){
+	private DWTCoefficients decompose(Matrix inputMatrix, boolean calculateMatrixNorms, final String fileSaveName, int level){
 //		 = new Matrix(input);
 //		System.out.println("Input matrix = " + inputMatrix);
 		
@@ -77,12 +77,12 @@ public class DWT {
 				"\t\tV,H,D Sum: "+myFormatter.format(mDWTCoefs.getNormVHDSum())
 				);
 		if (fileSaveName!=null && fileSaveName != ""){
-			ma.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mAverageCoef+FileNamesConst.ext,	"Average coefs "+fileSaveName);
-			mh.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mHorizCoef+FileNamesConst.ext, 	"Horiz coefs "+fileSaveName);
-			mv.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mVerticalCoef+FileNamesConst.ext, 	"Vert coefs "+fileSaveName);
-			md.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mDialonalCoef+FileNamesConst.ext, 	"Diag coefs "+fileSaveName);
+			ma.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mAverageCoef+FileNamesConst.extData,	"Average coefs "+fileSaveName);
+			mh.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mHorizCoef+FileNamesConst.extData, 	"Horiz coefs "+fileSaveName);
+			mv.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mVerticalCoef+FileNamesConst.extData, 	"Vert coefs "+fileSaveName);
+			md.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mDialonalCoef+FileNamesConst.extData, 	"Diag coefs "+fileSaveName);
 			if (adaptiveMap!=null)
-				adaptiveMap.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mTransfMap+FileNamesConst.ext, "Transformation mapping "+fileSaveName);
+				adaptiveMap.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mTransfMap+FileNamesConst.extData, "Transformation mapping "+fileSaveName);
 		}
 		return mDWTCoefs;
 	}

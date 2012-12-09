@@ -8,11 +8,11 @@ import math.utils.FileNamesConst;
 import math.utils.Log;
 
 public class DWT {
-	private Wavelet2DTransformation tranformation;
-	public Wavelet2DTransformation getTranformation(){return tranformation;} 
+	private Wavelet2DTransformation mTranformation;
+	public Wavelet2DTransformation getTranformation(){return mTranformation;} 
 	public DWT(Wavelet2DTransformation tranformation) {
 		super();
-		this.tranformation = tranformation;
+		this.mTranformation = tranformation;
 	}
 	
 	/**
@@ -47,22 +47,22 @@ public class DWT {
 		final int columns = inputMatrix.getColumnsCount();
 //		final int coefRows = Math.round(rows/2);
 //		final int coefColumns = Math.round(columns/2);
-		final int coefRows = (rows+tranformation.getLength()-1)/tranformation.getLength();
-		final int coefColumns = (columns+tranformation.getLength()-1)/tranformation.getLength();
+		final int coefRows = (rows+mTranformation.getLength()-1)/mTranformation.getLength();
+		final int coefColumns = (columns+mTranformation.getLength()-1)/mTranformation.getLength();
 		Matrix ma,mv,mh,md;
 		ma = new Matrix(coefRows,coefColumns);
 		mv = new Matrix(coefRows,coefColumns);
 		mh = new Matrix(coefRows,coefColumns);
 		md = new Matrix(coefRows,coefColumns);
-		ma.setTransform(tranformation); //init further composable coefss
+		ma.setTransform(mTranformation); //init further composable coefss
 				
 //		System.out.println("DWT is processing "+fileSaveName+". Transform = "+tranformation.getCaption());
 		Matrix adaptiveMap = null;
-		if (tranformation instanceof HaarAdaptive){
+		if (mTranformation instanceof HaarAdaptive){
 			adaptiveMap = new Matrix(coefRows,coefColumns);
 		}
-		processCoeficients(inputMatrix,ma,mv,mh,md,adaptiveMap);
-		DWTCoefficients mDWTCoefs = new DWTCoefficients(
+		doWaveletTranform(inputMatrix,ma,mv,mh,md,adaptiveMap);
+		DWTCoefficients resDWTCoefs = new DWTCoefficients(
 				(level>1)?decompose(ma, calculateMatrixNorms, fileSaveName, level-1):ma
 				, mv, mh, md, adaptiveMap, calculateMatrixNorms);
 
@@ -70,21 +70,21 @@ public class DWT {
 		DecimalFormat myFormatter = new DecimalFormat("#,000");
 		Log.getInstance().log(Level.FINE, 
 				fileSaveName+"L"+level+" "+
-				(mDWTCoefs.getNormMh())+
-				"\t"+(mDWTCoefs.getNormMv())+
-				"\t"+(mDWTCoefs.getNormMd())+
-				"\t\t"+myFormatter.format(mDWTCoefs.getNormMa())+
-				"\t\tV,H,D Sum: "+myFormatter.format(mDWTCoefs.getNormVHDSum())
+				(resDWTCoefs.getNormMh())+
+				"\t"+(resDWTCoefs.getNormMv())+
+				"\t"+(resDWTCoefs.getNormMd())+
+				"\t\t"+myFormatter.format(resDWTCoefs.getNormMa())+
+				"\t\tV,H,D Sum: "+myFormatter.format(resDWTCoefs.getNormVHDSum())
 				);
 		if (fileSaveName!=null && fileSaveName != ""){
-			ma.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mAverageCoef+FileNamesConst.extData,	"Average coefs "+fileSaveName);
-			mh.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mHorizCoef+FileNamesConst.extData, 	"Horiz coefs "+fileSaveName);
-			mv.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mVerticalCoef+FileNamesConst.extData, 	"Vert coefs "+fileSaveName);
-			md.saveToFile(fileSaveName+tranformation.getCaption()+"Lvl"+level+FileNamesConst.mDialonalCoef+FileNamesConst.extData, 	"Diag coefs "+fileSaveName);
+			ma.saveToFile(fileSaveName+mTranformation.getCaption()+"Lvl"+level+FileNamesConst.mAverageCoef+FileNamesConst.extData,	"Average coefs "+fileSaveName);
+			mh.saveToFile(fileSaveName+mTranformation.getCaption()+"Lvl"+level+FileNamesConst.mHorizCoef+FileNamesConst.extData, 	"Horiz coefs "+fileSaveName);
+			mv.saveToFile(fileSaveName+mTranformation.getCaption()+"Lvl"+level+FileNamesConst.mVerticalCoef+FileNamesConst.extData, 	"Vert coefs "+fileSaveName);
+			md.saveToFile(fileSaveName+mTranformation.getCaption()+"Lvl"+level+FileNamesConst.mDialonalCoef+FileNamesConst.extData, 	"Diag coefs "+fileSaveName);
 			if (adaptiveMap!=null)
-				adaptiveMap.saveToFile(fileSaveName+tranformation.getCaption()+FileNamesConst.mTransfMap+FileNamesConst.extData, "Transformation mapping "+fileSaveName);
+				adaptiveMap.saveToFile(fileSaveName+mTranformation.getCaption()+FileNamesConst.mTransfMap+FileNamesConst.extData, "Transformation mapping "+fileSaveName);
 		}
-		return mDWTCoefs;
+		return resDWTCoefs;
 	}
 
 //	private float[] dwtCoef;
@@ -99,7 +99,7 @@ public class DWT {
 	 * @param md Diag
 	 * @param map transf map for Adaptive Haar
 	 */
-	private void processCoeficients(Matrix inputMatrix, Matrix ma, Matrix mv, Matrix mh, Matrix md, Matrix map) {
+	private void doWaveletTranform(Matrix inputMatrix, Matrix ma, Matrix mv, Matrix mh, Matrix md, Matrix map) {
 		int rows = inputMatrix.getRowsCount();
 		int columns = inputMatrix.getColumnsCount();
 		
@@ -107,7 +107,7 @@ public class DWT {
 		if (map!=null){
 			for (int i = 0; i < rows; i+=2){
 				for (int j = 0; j < columns; j+=2){
-					dwtCoef = tranformation.perform(
+					dwtCoef = mTranformation.perform(
 							new float[]{
 								inputMatrix.get()[i][j], 
 //								inputMatrix.get()[i][j+1], 
@@ -130,7 +130,7 @@ public class DWT {
 		} else {
 			for (int i = 0; i < rows; i+=2){
 				for (int j = 0; j < columns; j+=2){
-					dwtCoef = tranformation.perform(
+					dwtCoef = mTranformation.perform(
 							new float[]{
 								inputMatrix.get()[i][j], 
 //								inputMatrix.get()[i][j+1], 
@@ -163,11 +163,12 @@ public class DWT {
 				"mv ["+mv.length+", "+mv[0].length+"]."
 				);
 		Matrix reconstructedMatrix = new Matrix(rows*2, columns*2); 
+		reconstructedMatrix.setTransform(mTranformation);
 		
 		float [] dwtCoef = null;
-		if (tranformation instanceof HaarAdaptive){
+		if (mTranformation instanceof HaarAdaptive){
 			try {
-				HaarAdaptive haarAdaptive = (HaarAdaptive) tranformation;
+				HaarAdaptive haarAdaptive = (HaarAdaptive) mTranformation;
 				float [][] transfMap = coefs.getMap().get();
 				
 				for (int i = 0; i < rows; i++){
@@ -188,14 +189,14 @@ public class DWT {
 					}	
 				}
 			} catch (ArrayIndexOutOfBoundsException e) {
-				System.err.println("DWT reconstruct. Wrong parameters for Adaptive Haar?\n" + e.getMessage());
+				System.err.println("DWT reconstruct. Wrong array index for Adaptive Haar: " + e.getMessage());
 			} catch (Exception e) {
 				System.err.println("DWT reconstruct for Adaptive Haar failed.\n" + e.getMessage());
 			}
 		} else {
 			for (int i = 0; i < rows; i++){
 				for (int j = 0; j < columns; j++){
-					dwtCoef = tranformation.inverse(
+					dwtCoef = mTranformation.inverse(
 							new float[] {
 								ma[i][j],
 								mv[i][j],
@@ -210,6 +211,7 @@ public class DWT {
 				}	
 			}
 		}
+		
 		
 		return reconstructedMatrix;
 	}

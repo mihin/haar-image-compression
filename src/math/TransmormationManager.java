@@ -2,6 +2,8 @@ package math;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 import math.compress.Quantization;
@@ -17,45 +19,57 @@ import math.utils.FileNamesConst;
 import math.utils.Log;
 
 public class TransmormationManager {
-	private int level;
+	private int mDecompLevels = 1;
+	private int mQuantizLevels = 64;
 	private boolean doReconstruct;
-	private Class transformClass;
+	private Class mWaveletTrnsfrm;
 
-	TransmormationManager(int level, boolean toReconstruct) {
-		this.level = level;
-		doReconstruct = toReconstruct;
-		transformClass = HaarAdaptive.class;
+	TransmormationManager(int dLvls, int quantLvls, Class transformClass) {
+		mDecompLevels = dLvls;
+		mQuantizLevels = quantLvls;
+		doReconstruct = true;
+		mWaveletTrnsfrm = transformClass;
+		
+		new File(FileNamesConst.resultsFolder).mkdirs();
+		new File(FileNamesConst.resultsFolder, FileNamesConst.picsFolder).mkdirs();
+		new File(FileNamesConst.resultsFolder, FileNamesConst.resultsDebugDataFolder).mkdirs();
 	}
 
-	public void startTransforms() {
-		performDecomposition();
+	public List<String> start(int filesCount) {
+		return performDecomposition(filesCount);
+	}
+	public boolean start(String imageFileName) {
+		File f = null;
+		if (!(f = new File(FileNamesConst.picsFolder + imageFileName)).exists())
+			return false;
+		decomposeImage(f.toString());
+		return true;
 	}
 
 	/**
 	 * Launch transmormation(s) Chooses files to be processed
+	 * @param filesCount 
 	 */
-	private void performDecomposition() {
-		new File(FileNamesConst.resultsFolder).mkdirs();
-		new File(FileNamesConst.resultsFolder, FileNamesConst.picsFolder).mkdirs();
-		new File(FileNamesConst.resultsFolder, FileNamesConst.resultsDebugDataFolder).mkdirs();
+	private List<String> performDecomposition(int filesCount) {
 		final String EXTENTION = FileNamesConst.extBMP;
-		final String FILENAME = "image";
+		final String IN_FILENAME = "image";
 
-		int fileLimit = 1;
+		int inFileCount = 0;
+		String currImageName = null;
+		List<String> processingImages = new ArrayList<String>();
+		while (filesCount-- > -1
+				&& new File(FileNamesConst.picsFolder + (currImageName = IN_FILENAME + (++inFileCount) + EXTENTION))
+						.exists()) {
+			processingImages.add(currImageName);
+		}
 
-		// int inFileCount = 0;
-		// while ( fileLimit-->-1 &&
-		// new File(PICFOLDER+FILENAME+(++inFileCount)+EXTENTION).exists()){}
-		//
-		// String filename = null;
-		// for (int i = 1; i < inFileCount; i++){
-		// filename = PICFOLDER+FILENAME+i+EXTENTION;
-		// decomposeImage(filename);
-		// }
-		//
-		// if (DO_RECONSTRUCT)
-		// new File(FileNamesConst.resultsFolder+PICFOLDER).mkdir();
-		decomposeImage(FileNamesConst.picsFolder + "image5" + EXTENTION);
+		for (String filename : processingImages) {
+			decomposeImage(FileNamesConst.picsFolder + filename);
+		}
+
+		// decomposeImage(FileNamesConst.picsFolder + "image5" + EXTENTION);
+
+		return processingImages;
 	}
 
 	/**
@@ -70,11 +84,9 @@ public class TransmormationManager {
 		ImageObject imageData = null;
 		try {
 			imageData = ia.readImageFile(filename);
-			Log.getInstance().log(
-					Level.FINE,
-					"Image from file " + filename + " was read(w="
-							+ imageData.width + ", h=" + imageData.height
-							+ ").");
+			Log.getInstance().log(Level.FINE,
+							"Image from file " + filename + " was read(w=" + imageData.width + ", h="
+									+ imageData.height + ").");
 			// System.out.println("Image from file "+filename+" was read(w="+imageData.width+", h="+imageData.height+").");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -93,7 +105,7 @@ public class TransmormationManager {
 		// Wavelet2DTransformation method = new HaarClassic();
 		Wavelet2DTransformation method = null;
 		try {
-			method = (Wavelet2DTransformation) transformClass.newInstance();
+			method = (Wavelet2DTransformation) mWaveletTrnsfrm.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
@@ -126,10 +138,9 @@ public class TransmormationManager {
 		 */
 
 		final String imageFilename = imageData.getFilename() + method.getCaption();
-		final int quantLevels = 2 * 32;
 		Log.getInstance().log(Level.INFO,
-				"\n -=Quantization=-  [" + quantLevels + " levels]");
-		Quantization mQuantization = new Quantization(quantLevels);
+				"\n -=Quantization=-  [" + mQuantizLevels + " levels]");
+		Quantization mQuantization = new Quantization(mQuantizLevels);
 		DWTCoefficients decodedCoefs[] = mQuantization.process(dwtCoefs, imageFilename);
 
 		if (doReconstruct)
@@ -165,7 +176,7 @@ public class TransmormationManager {
 		// System.out.println(dwt.getTranformation().getCaption()+": \n\tHor\t\tVer\t\tDiag\t\t\tAverage");
 		DWTCoefficients[] coefs = dwt.decompose(new Matrix[] {
 				new Matrix(imageData.pixelsR), new Matrix(imageData.pixelsG),
-				new Matrix(imageData.pixelsB), }, true, doLogCoefs, level);
+				new Matrix(imageData.pixelsB), }, true, doLogCoefs, mDecompLevels);
 
 		// Matrix m = new Matrix(new float [][]{{1,2,3,4}, {4,6,1,2}, {1,2,3,4},
 		// {5,6,7,2}});

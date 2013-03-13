@@ -1,9 +1,15 @@
 package math.dwt;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 import math.dwt.wavelets.HaarAdaptive;
+import math.dwt.wavelets.HaarClassic;
+import math.dwt.wavelets.HaarDiagonal;
+import math.dwt.wavelets.HaarHorizotal;
+import math.dwt.wavelets.HaarVertical;
 import math.utils.FileNamesConst;
 import math.utils.Log;
 
@@ -66,6 +72,25 @@ public class DWT {
 				(level>1)?decompose(ma, calculateMatrixNorms, fileSaveName, level-1):ma
 				, mv, mh, md, adaptiveMap, calculateMatrixNorms);
 
+		String adaptiveMapStatistic = null;
+		if (adaptiveMap != null) {
+			adaptiveMapStatistic = "";
+			Map<Integer, Integer> matrixStatistics = getMatrixStatistics(adaptiveMap);
+			// for (Integer val : matrixStatistics.keySet()){
+			// adaptiveMapStatistic += "Tr" + val + " - " +
+			// matrixStatistics.get(val) + "; ";
+			// }
+			// new HaarClassic(),
+			// new HaarVertical(),
+			// new HaarHorizotal(),
+			// new HaarDiagonal()
+		
+			adaptiveMapStatistic += "HaarClassic " + matrixStatistics.get(0);
+			adaptiveMapStatistic += "; HaarVertical " + matrixStatistics.get(1);
+			adaptiveMapStatistic += "; HaarHorizotal " + matrixStatistics.get(2);
+			adaptiveMapStatistic += "; HaarDiagonal " + matrixStatistics.get(3);
+		}
+		
 		//output decomposition coefficients
 		DecimalFormat myFormatter = new DecimalFormat("#,000");
 		Log.getInstance().log(Level.FINE, 
@@ -74,7 +99,8 @@ public class DWT {
 				"\t"+(resDWTCoefs.getNormMv())+
 				"\t"+(resDWTCoefs.getNormMd())+
 				"\t\t"+myFormatter.format(resDWTCoefs.getNormMa())+
-				"\t\tV,H,D Sum: "+myFormatter.format(resDWTCoefs.getNormVHDSum())
+				"\t\tV,H,D Sum: "+myFormatter.format(resDWTCoefs.getNormVHDSum())+
+				(adaptiveMapStatistic!=null?"\t"+adaptiveMapStatistic:"")
 				);
 		if (fileSaveName!=null && fileSaveName != ""){
 			ma.saveToFile(fileSaveName+mTranformation.getCaption()+"Lvl"+level+FileNamesConst.mAverageCoef+FileNamesConst.extData,	"Average coefs "+fileSaveName);
@@ -215,5 +241,18 @@ public class DWT {
 		
 		return reconstructedMatrix;
 	}
+	
+	private Map<Integer, Integer> getMatrixStatistics(Matrix m) {
+		float[][] values = m.get();
+		Map<Integer, Integer> res = new HashMap<Integer, Integer>();
+		int val;
+		Integer count;
+		for (float[] row : values)
+			for (Float j : row)
+				res.put((val = (int)j.floatValue()), ((count = res.get(val)) == null ? 1 : count.intValue()+1));
+
+		return res;
+	}
+
 
 }

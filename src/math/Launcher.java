@@ -16,13 +16,13 @@ import math.utils.Log;
 
 public class Launcher {
 
-	public static void main(String[] in) {
+	public static void main(String [] args) {
 		// StreamHandler sh = new StreamHandler(System.out, new
 		// SimpleFormatter());
 		// Log.get().addHandler(sh);
 		Level logLevel = Level.FINE;
 
-		int wtLevel = 3;
+		int wtLevel = 1;
 		int quantLevels = 32;
 		Class wavelet = HaarAdaptive.class;
 		Log.getInstance().setLevel(logLevel);

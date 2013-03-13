@@ -106,7 +106,7 @@ public class TransmormationManager {
 		Wavelet2DTransformation method = null;
 		try {
 			method = (Wavelet2DTransformation) mWaveletTrnsfrm.newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		dwtCoefs = decomposeImage(logCoefsToFile, imageData, method);

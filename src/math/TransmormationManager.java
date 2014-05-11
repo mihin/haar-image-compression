@@ -23,6 +23,12 @@ public class TransmormationManager {
 	private int mQuantizLevels = 64;
 	private boolean doReconstruct;
 	private Class mWaveletTrnsfrm;
+	private String mOutputFormat = FileNamesConst.extBMP;
+	private boolean toCopyOriginImageToResults = true;
+
+	public void setOutputFormat(String mOutputFormat) {
+		this.mOutputFormat = mOutputFormat;
+	}
 
 	TransmormationManager(int dLvls, int quantLvls, Class transformClass) {
 		mDecompLevels = dLvls;
@@ -52,22 +58,19 @@ public class TransmormationManager {
 	 */
 	private List<String> performDecomposition(int filesCount) {
 		final String EXTENTION = FileNamesConst.extBMP;
-		final String IN_FILENAME = "image";
+		final String INPUT_FILENAME = "image";
 
 		int inFileCount = 0;
 		String currImageName = null;
 		List<String> processingImages = new ArrayList<String>();
-		while (filesCount-- > -1
-				&& new File(FileNamesConst.picsFolder + (currImageName = IN_FILENAME + (++inFileCount) + EXTENTION))
-						.exists()) {
+		while (filesCount-- > -1 && 
+				new File(FileNamesConst.picsFolder + (currImageName = INPUT_FILENAME + (++inFileCount) + EXTENTION)).exists()) {
 			processingImages.add(currImageName);
 		}
 
 		for (String filename : processingImages) {
 			decomposeImage(FileNamesConst.picsFolder + filename);
 		}
-
-		// decomposeImage(FileNamesConst.picsFolder + "image5" + EXTENTION);
 
 		return processingImages;
 	}
@@ -88,6 +91,9 @@ public class TransmormationManager {
 							"Image from file " + filename + " was read(w=" + imageData.width + ", h="
 									+ imageData.height + ").");
 			// System.out.println("Image from file "+filename+" was read(w="+imageData.width+", h="+imageData.height+").");
+	
+			if (toCopyOriginImageToResults)
+				imageData.saveToImageFile(filename, mOutputFormat);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -111,7 +117,7 @@ public class TransmormationManager {
 		}
 		dwtCoefs = decomposeImage(logCoefsToFile, imageData, method);
 		if (doReconstruct)
-			simpleReconstruct(new DWT(method), imageData, dwtCoefs);
+			simpleReconstruct(new DWT(method), imageData, false, dwtCoefs);
 
 		// comparison output
 		/*
@@ -146,9 +152,9 @@ public class TransmormationManager {
 		if (doReconstruct)
 			if (decodedCoefs != null) {
 				DWT dwt = new DWT(method);
-				String newFile = filename.replace(".", "Huffman.");
-				imageData.setFilename(newFile);
-				simpleReconstruct(dwt, imageData, decodedCoefs);
+//				String newFile = filename.replace(".", "Huffman.");
+//				imageData.setFilename(newFile);
+				simpleReconstruct(dwt, imageData, true, decodedCoefs);
 			} else {
 				Log.getInstance().log(Level.WARNING,
 						"Reconstruction received empty image coefs");
@@ -190,11 +196,9 @@ public class TransmormationManager {
 	}
 
 	// private int reconsCount = 1;
-	private void simpleReconstruct(DWT dwt, ImageObject imageData,
-			DWTCoefficients... coef) {
+	private void simpleReconstruct(DWT dwt, ImageObject imageData, boolean isHuffman, DWTCoefficients... coef) {
 		Log.getInstance().log(Level.FINE,
 				"\nReconstruction attempt.. (" + imageData.getFilename() + ")");
-		// System.out.println("Reconstruction attempt.. ("+imageData.getFilename()+")");
 
 		Matrix reconstR = dwt.reconstruct(coef[0]);
 		Matrix reconstG = dwt.reconstruct(coef[1]);
@@ -208,10 +212,15 @@ public class TransmormationManager {
 		ImageObject reconstImage = new ImageObject(reconstR.get(),
 				reconstG.get(), reconstB.get(), reconstR.getColumnsCount(),
 				reconstR.getRowsCount());
-		reconstImage.saveToImageFile(imageData.getFilename() + "Reconst"
-				+ dwt.getTranformation().getCaption(),FileNamesConst.extJPEG);
-		reconstImage.saveToImageFile(imageData.getFilename() + "Reconst"
-				+ dwt.getTranformation().getCaption(),FileNamesConst.extBMP);
+		
+		String filename = String.format(isHuffman?"%1$sHuffmanQ%3$dReconstL%2$d%4$s":"%1$sReconstL%2$d%4$s", 
+				imageData.getFilename(), mDecompLevels, mQuantizLevels, dwt.getTranformation().getCaption());
+		reconstImage.saveToImageFile(filename, mOutputFormat);
+		
+//		reconstImage.saveToImageFile(imageData.getFilename() + "Reconst"
+//				+ dwt.getTranformation().getCaption(),FileNamesConst.extJPEG);
+//		reconstImage.saveToImageFile(imageData.getFilename() + "Reconst"
+//				+ dwt.getTranformation().getCaption(),FileNamesConst.extBMP);
 	}
 
 	/**

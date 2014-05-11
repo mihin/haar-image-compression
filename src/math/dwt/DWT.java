@@ -5,11 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-import math.dwt.wavelets.HaarAdaptive;
-import math.dwt.wavelets.HaarClassic;
-import math.dwt.wavelets.HaarDiagonal;
-import math.dwt.wavelets.HaarHorizotal;
-import math.dwt.wavelets.HaarVertical;
+import math.dwt.wavelets.*;
 import math.utils.FileNamesConst;
 import math.utils.Log;
 
@@ -76,19 +72,15 @@ public class DWT {
 		if (adaptiveMap != null) {
 			adaptiveMapStatistic = "";
 			Map<Integer, Integer> matrixStatistics = getMatrixStatistics(adaptiveMap);
-			// for (Integer val : matrixStatistics.keySet()){
-			// adaptiveMapStatistic += "Tr" + val + " - " +
-			// matrixStatistics.get(val) + "; ";
-			// }
-			// new HaarClassic(),
-			// new HaarVertical(),
-			// new HaarHorizotal(),
-			// new HaarDiagonal()
-		
-			adaptiveMapStatistic += "HaarClassic " + matrixStatistics.get(0);
-			adaptiveMapStatistic += "; HaarVertical " + matrixStatistics.get(1);
-			adaptiveMapStatistic += "; HaarHorizotal " + matrixStatistics.get(2);
-			adaptiveMapStatistic += "; HaarDiagonal " + matrixStatistics.get(3);
+
+			try {
+				adaptiveMapStatistic += "HaarClassic " + matrixStatistics.get(0) + " (" +(matrixStatistics.get(0)*100/matrixStatistics.get(-1))+"%)";
+				adaptiveMapStatistic += "; HaarVertical " + matrixStatistics.get(1) + " (" +(matrixStatistics.get(1)*100/matrixStatistics.get(-1))+"%)";
+				adaptiveMapStatistic += "; HaarHorizotal " + matrixStatistics.get(2) + " (" +(matrixStatistics.get(2)*100/matrixStatistics.get(-1))+"%)";
+				adaptiveMapStatistic += "; HaarDiagonal " + matrixStatistics.get(3) + " (" +(matrixStatistics.get(3)*100/matrixStatistics.get(-1))+"%)";
+			} catch (NullPointerException e) {
+				Log.getInstance().log(Level.WARNING, "NPE:: DWT.decompose(), matrixStatistics...");
+			}
 		}
 		
 		//output decomposition coefficients
@@ -247,10 +239,13 @@ public class DWT {
 		Map<Integer, Integer> res = new HashMap<Integer, Integer>();
 		int val;
 		Integer count;
+		int total = 0;
 		for (float[] row : values)
-			for (Float j : row)
+			for (Float j : row) {
 				res.put((val = (int)j.floatValue()), ((count = res.get(val)) == null ? 1 : count.intValue()+1));
-
+				total++;
+			}
+		res.put(-1, total);
 		return res;
 	}
 

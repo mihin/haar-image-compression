@@ -21,28 +21,28 @@ public class Launcher {
 		// SimpleFormatter());
 		// Log.get().addHandler(sh);
 		Level logLevel = Level.FINE;
+		Log.getInstance().setLevel(logLevel);
 
-		int wtLevel = 1;
+		int wtLevel = 2;
 		int quantLevels = 32;
 		Class wavelet = HaarAdaptive.class;
-		Log.getInstance().setLevel(logLevel);
+		
 		TransmormationManager m = new TransmormationManager(wtLevel, quantLevels, wavelet);
 
-		Log.getInstance().log(
-				Level.CONFIG,
+		Log.getInstance().log(Level.CONFIG,
 				"TransmormationManager launch. Decomposition depth " + wtLevel + ", quatLvl = " + quantLevels
-						+ ". wavlet is " + wavelet.getSimpleName());
+				+ ". wavlet is " + wavelet.getSimpleName());
 
-		List<String> files = null;
-		String filename = "image5.bmp";
-		if (!m.start(filename))
-			System.err.println("File not found: " + filename);
-		else {
-			files = new ArrayList<String>();
-			files.add(filename);
-		}
+//		List<String> files = null;
+//		String filename = "image10.bmp";
+//		if (!m.start(filename))
+//			System.err.println("File not found: " + filename);
+//		else {
+//			files = new ArrayList<String>();
+//			files.add(filename);
+//		}
 
-		// List<String> files = m.start(20);
+		List<String> files = m.start(20);
 
 		if (files != null && files.size() > 0) {
 			System.err.println("\t-= End transformation. Begin analyse =-");

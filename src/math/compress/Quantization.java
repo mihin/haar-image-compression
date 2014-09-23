@@ -58,7 +58,7 @@ public class Quantization {
 			compressColorToStream(image[DWTCoefficients.GREEN], binOut);
 			compressColorToStream(image[DWTCoefficients.BLUE], binOut);
 			binOut.close();
-
+			
 			Log.getInstance().log(Level.FINER, "\nStart image bit-decompression");
 			binInput = new BitInputStream(new FileInputStream(output));
 			mDWTCoefficients = new DWTCoefficients[] { decompressColorFromStream(binInput),

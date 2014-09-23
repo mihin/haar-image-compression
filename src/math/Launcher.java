@@ -10,7 +10,7 @@ import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 
-import math.dwt.wavelets.HaarAdaptive;
+import math.dwt.wavelets.*;
 import math.utils.FileNamesConst;
 import math.utils.Log;
 
@@ -20,21 +20,22 @@ public class Launcher {
 		// StreamHandler sh = new StreamHandler(System.out, new
 		// SimpleFormatter());
 		// Log.get().addHandler(sh);
-		Level logLevel = Level.FINE;
+		Level logLevel = Level.ALL;
 		Log.getInstance().setLevel(logLevel);
 
-		int wtLevel = 2;
-		int quantLevels = 32;
+		int wtLevel = 3;
+		int quantLevels = 64;
+//		Class wavelet = HaarClassic.class;
 		Class wavelet = HaarAdaptive.class;
 		
 		TransmormationManager m = new TransmormationManager(wtLevel, quantLevels, wavelet);
 
 		Log.getInstance().log(Level.CONFIG,
 				"TransmormationManager launch. Decomposition depth " + wtLevel + ", quatLvl = " + quantLevels
-				+ ". wavlet is " + wavelet.getSimpleName());
+				+ ". wavelet is " + wavelet.getSimpleName());
 
 //		List<String> files = null;
-//		String filename = "image10.bmp";
+//		String filename = "image1.bmp";
 //		if (!m.start(filename))
 //			System.err.println("File not found: " + filename);
 //		else {
@@ -45,7 +46,7 @@ public class Launcher {
 		List<String> files = m.start(20);
 
 		if (files != null && files.size() > 0) {
-			System.err.println("\t-= End transformation. Begin analyse =-");
+			System.err.println("\n-= End transformation. Begin analyse =-");
 
 			System.out.println("Decompositon level = " + wtLevel + ", quantization levels = " + quantLevels
 					+ ", wavelet = " + wavelet.getSimpleName());
@@ -53,7 +54,7 @@ public class Launcher {
 				analyseResults(file);
 			}
 		} else {
-			System.err.println("\t-= End transformation. Analyse failed since file list is empty =-");
+			System.err.println("\n-= End transformation. Analyse failed since file list is empty =-");
 		}
 
 		// m.logFile = new File("log.txt");

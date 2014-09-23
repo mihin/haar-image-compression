@@ -22,7 +22,7 @@ public class TransmormationManager {
 	private int mDecompLevels = 1;
 	private int mQuantizLevels = 64;
 	private boolean doReconstruct;
-	private Class mWaveletTrnsfrm;
+	private Class classWaveletTransform;
 	private String mOutputFormat = FileNamesConst.extBMP;
 	private boolean toCopyOriginImageToResults = true;
 
@@ -34,7 +34,7 @@ public class TransmormationManager {
 		mDecompLevels = dLvls;
 		mQuantizLevels = quantLvls;
 		doReconstruct = true;
-		mWaveletTrnsfrm = transformClass;
+		classWaveletTransform = transformClass;
 		
 		new File(FileNamesConst.resultsFolder).mkdirs();
 		new File(FileNamesConst.resultsFolder, FileNamesConst.picsFolder).mkdirs();
@@ -111,13 +111,13 @@ public class TransmormationManager {
 		// Wavelet2DTransformation method = new HaarClassic();
 		Wavelet2DTransformation method = null;
 		try {
-			method = (Wavelet2DTransformation) mWaveletTrnsfrm.newInstance();
+			method = (Wavelet2DTransformation) classWaveletTransform.newInstance();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		dwtCoefs = decomposeImage(logCoefsToFile, imageData, method);
 		if (doReconstruct)
-			simpleReconstruct(new DWT(method), imageData, false, dwtCoefs);
+			simpleReconstruct(new DWT(method), imageData.getFilename(), imageData.width, imageData.height, false, dwtCoefs);
 
 		// comparison output
 		/*
@@ -148,13 +148,13 @@ public class TransmormationManager {
 				"\n -=Quantization=-  [" + mQuantizLevels + " levels]");
 		Quantization mQuantization = new Quantization(mQuantizLevels);
 		DWTCoefficients decodedCoefs[] = mQuantization.process(dwtCoefs, imageFilename);
-
+			
 		if (doReconstruct)
 			if (decodedCoefs != null) {
 				DWT dwt = new DWT(method);
 //				String newFile = filename.replace(".", "Huffman.");
 //				imageData.setFilename(newFile);
-				simpleReconstruct(dwt, imageData, true, decodedCoefs);
+				simpleReconstruct(dwt, imageData.getFilename(), imageData.width, imageData.height, true, decodedCoefs);
 			} else {
 				Log.getInstance().log(Level.WARNING,
 						"Reconstruction received empty image coefs");
@@ -171,8 +171,7 @@ public class TransmormationManager {
 	 *            transformation type
 	 * @return R, G, B coefs
 	 */
-	private DWTCoefficients[] decomposeImage(boolean doLogCoefs,
-			ImageObject imageData, Wavelet2DTransformation transform) {
+	private DWTCoefficients[] decomposeImage(boolean doLogCoefs, ImageObject imageData, Wavelet2DTransformation transform) {
 		// start Haar decomposition
 		DWT dwt = new DWT(transform);
 		Log.getInstance().log(
@@ -180,41 +179,29 @@ public class TransmormationManager {
 				"\n" + dwt.getTranformation().getCaption()
 						+ ": \n\tHor\t\tVer\t\tDiag\t\t\tAverage");
 		// System.out.println(dwt.getTranformation().getCaption()+": \n\tHor\t\tVer\t\tDiag\t\t\tAverage");
-		DWTCoefficients[] coefs = dwt.decompose(new Matrix[] {
-				new Matrix(imageData.pixelsR), new Matrix(imageData.pixelsG),
-				new Matrix(imageData.pixelsB), }, true, doLogCoefs, mDecompLevels);
-
-		// Matrix m = new Matrix(new float [][]{{1,2,3,4}, {4,6,1,2}, {1,2,3,4},
-		// {5,6,7,2}});
-		// DWTCoefficients coef = dwt.decompose( m , true, "testMatr");
-		// System.out.println("Reconstr "+ dwt.getTranformation().getCaption());
-		// Matrix reconst = dwt.reconstruct(coef);
-		// if (reconst.equals(m)) System.out.println("Reconstr M is the same");
-		// System.out.println();
-
+		DWTCoefficients[] coefs = dwt.decompose(
+				new Matrix[] {
+					new Matrix(imageData.pixelsR), 
+					new Matrix(imageData.pixelsG),
+					new Matrix(imageData.pixelsB)}, 
+					true, doLogCoefs, mDecompLevels);
 		return coefs;
 	}
 
 	// private int reconsCount = 1;
-	private void simpleReconstruct(DWT dwt, ImageObject imageData, boolean isHuffman, DWTCoefficients... coef) {
+	private void simpleReconstruct(DWT dwt, String imageFilename, int w, int h, boolean isHuffman, DWTCoefficients... coef) {
 		Log.getInstance().log(Level.FINE,
-				"\nReconstruction attempt.. (" + imageData.getFilename() + ")");
+				"\nReconstruction attempt.. (" + imageFilename + ")");
 
 		Matrix reconstR = dwt.reconstruct(coef[0]);
 		Matrix reconstG = dwt.reconstruct(coef[1]);
 		Matrix reconstB = dwt.reconstruct(coef[2]);
 
-		// if (reconstR.equals(new Matrix(imageData.pixelsR)) &&
-		// reconstG.equals(new Matrix(imageData.pixelsG)) &&
-		// reconstB.equals(new Matrix(imageData.pixelsB)) )
-		// System.out.println("_Reconstructed Matrixes are equal");
-
 		ImageObject reconstImage = new ImageObject(reconstR.get(),
-				reconstG.get(), reconstB.get(), reconstR.getColumnsCount(),
-				reconstR.getRowsCount());
+				reconstG.get(), reconstB.get(), w, h);
 		
 		String filename = String.format(isHuffman?"%1$sHuffmanQ%3$dReconstL%2$d%4$s":"%1$sReconstL%2$d%4$s", 
-				imageData.getFilename(), mDecompLevels, mQuantizLevels, dwt.getTranformation().getCaption());
+				imageFilename, mDecompLevels, mQuantizLevels, dwt.getTranformation().getCaption());
 		reconstImage.saveToImageFile(filename, mOutputFormat);
 		
 //		reconstImage.saveToImageFile(imageData.getFilename() + "Reconst"
@@ -275,11 +262,6 @@ public class TransmormationManager {
 			}
 		}
 		return imageData;
-	}
-
-	private void reconstructImage() {
-		// TODO Auto-generated method stub
-
 	}
 
 }

@@ -42,13 +42,9 @@ public class DWT {
 	 * @return
 	 */
 	private DWTCoefficients decompose(Matrix inputMatrix, boolean calculateMatrixNorms, final String fileSaveName, int level){
-//		 = new Matrix(input);
-//		System.out.println("Input matrix = " + inputMatrix);
 		
 		final int rows = inputMatrix.getRowsCount();
 		final int columns = inputMatrix.getColumnsCount();
-//		final int coefRows = Math.round(rows/2);
-//		final int coefColumns = Math.round(columns/2);
 		final int coefRows = (rows+mTranformation.getLength()-1)/mTranformation.getLength();
 		final int coefColumns = (columns+mTranformation.getLength()-1)/mTranformation.getLength();
 		Matrix ma,mv,mh,md;
@@ -56,7 +52,7 @@ public class DWT {
 		mv = new Matrix(coefRows,coefColumns);
 		mh = new Matrix(coefRows,coefColumns);
 		md = new Matrix(coefRows,coefColumns);
-		ma.setTransform(mTranformation); //init further composable coefss
+		ma.setTransform(mTranformation); //init further composable coefs
 				
 //		System.out.println("DWT is processing "+fileSaveName+". Transform = "+tranformation.getCaption());
 		Matrix adaptiveMap = null;
@@ -86,7 +82,7 @@ public class DWT {
 		//output decomposition coefficients
 		DecimalFormat myFormatter = new DecimalFormat("#,000");
 		Log.getInstance().log(Level.FINE, 
-				fileSaveName+"L"+level+" "+
+				fileSaveName+"L"+level+"\t"+
 				(resDWTCoefs.getNormMh())+
 				"\t"+(resDWTCoefs.getNormMv())+
 				"\t"+(resDWTCoefs.getNormMd())+
@@ -174,11 +170,13 @@ public class DWT {
 		mv = coefs.getMv().get();	
 		mh = coefs.getMh().get();	
 		md = coefs.getMd().get();
-		final int rows = mv.length; 
-		final int columns = mv[0].length;
+		int rows = mv.length; 
+		int columns = mv[0].length;
 		Log.getInstance().log(Level.FINEST, "DWT.reconstruct(), " +
 				"ma ["+ma.length+", "+ma[0].length+"], " +
-				"mv ["+mv.length+", "+mv[0].length+"]."
+				"mv ["+mv.length+", "+mv[0].length+"], " + 
+				"mh ["+mh.length+", "+mh[0].length+"], " + 
+				"md ["+md.length+", "+md[0].length+"]."
 				);
 		Matrix reconstructedMatrix = new Matrix(rows*2, columns*2); 
 		reconstructedMatrix.setTransform(mTranformation);
@@ -188,6 +186,9 @@ public class DWT {
 			try {
 				HaarAdaptive haarAdaptive = (HaarAdaptive) mTranformation;
 				float [][] transfMap = coefs.getMap().get();
+				
+				rows = transfMap.length; 
+				columns = transfMap[0].length;
 				
 				for (int i = 0; i < rows; i++){
 					for (int j = 0; j < columns; j++){
@@ -208,8 +209,9 @@ public class DWT {
 				}
 			} catch (ArrayIndexOutOfBoundsException e) {
 				System.err.println("DWT reconstruct. Wrong array index for Adaptive Haar: " + e.getMessage());
-			} catch (Exception e) {
-				System.err.println("DWT reconstruct for Adaptive Haar failed.\n" + e.getMessage());
+				Log.getInstance().log(Level.SEVERE, String.format("ArrayIndexOutOfBoundsException: column = %d, row = %d, error = %s", columns, rows, e.getMessage().toString()));
+			} catch (Exception e1) {
+				System.err.println("DWT reconstruct for Adaptive Haar failed.\nError: " + e1 );
 			}
 		} else {
 			for (int i = 0; i < rows; i++){

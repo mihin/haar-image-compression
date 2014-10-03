@@ -1,3 +1,22 @@
+/*
+ 	Haar wavelets image compression
+ 	
+    Copyright (C) 2014 by Mikhail Prisheltsev <mikhail.prisheltsev@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package math;
 
 import java.awt.image.BufferedImage;
@@ -23,8 +42,8 @@ public class Launcher {
 		Level logLevel = Level.ALL;
 		Log.getInstance().setLevel(logLevel);
 
-		int wtLevel = 3;
-		int quantLevels = 64;
+		int wtLevel = 1;
+		int quantLevels = 32;
 //		Class wavelet = HaarClassic.class;
 		Class wavelet = HaarAdaptive.class;
 		
